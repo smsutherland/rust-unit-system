@@ -191,15 +191,15 @@ trait UnitFmt {
 pub mod si {
     use super::*;
 
-    pub const METER: BaseUnit<Length> = define_base_si_unit();
-    pub const KILOGRAM: BaseUnit<Mass> = define_base_si_unit();
-    pub const SECOND: BaseUnit<Time> = define_base_si_unit();
-    pub const AMPERE: BaseUnit<Current> = define_base_si_unit();
-    pub const KELVIN: BaseUnit<Temperature> = define_base_si_unit();
-    pub const MOLE: BaseUnit<Amount> = define_base_si_unit();
-    pub const CANDELA: BaseUnit<Luminosity> = define_base_si_unit();
+    const METER: BaseUnit<Length> = define_base_si_unit();
+    const KILOGRAM: BaseUnit<Mass> = define_base_si_unit();
+    const SECOND: BaseUnit<Time> = define_base_si_unit();
+    const AMPERE: BaseUnit<Current> = define_base_si_unit();
+    const KELVIN: BaseUnit<Temperature> = define_base_si_unit();
+    const MOLE: BaseUnit<Amount> = define_base_si_unit();
+    const CANDELA: BaseUnit<Luminosity> = define_base_si_unit();
 
-    pub const SI: UnitSystem = UnitSystem {
+    const SI: UnitSystem = UnitSystem {
         length: METER,
         mass: KILOGRAM,
         time: SECOND,
@@ -237,8 +237,8 @@ pub mod si {
     }
 
     macro_rules! create_fundamental_unit {
-        ($abbreviation:literal, $unit_name:literal, $kind:ident) => {
-            SingleUnit {
+        ($name:ident, $abbreviation:literal, $unit_name:literal, $kind:ident) => {
+            pub const $name: SingleUnit = SingleUnit {
                 length: parse_unit_kind!(length, $kind),
                 mass: parse_unit_kind!(mass, $kind),
                 time: parse_unit_kind!(time, $kind),
@@ -252,19 +252,65 @@ pub mod si {
                 name: $unit_name,
             }
         };
+        ($abbreviation:ident, $unit_name:literal, $kind:ident) => {
+            pub const $abbreviation: SingleUnit = SingleUnit {
+                length: parse_unit_kind!(length, $kind),
+                mass: parse_unit_kind!(mass, $kind),
+                time: parse_unit_kind!(time, $kind),
+                current: parse_unit_kind!(current, $kind),
+                temperature: parse_unit_kind!(temperature, $kind),
+                amount: parse_unit_kind!(amount, $kind),
+                luminosity: parse_unit_kind!(luminosity, $kind),
+                system: SI,
+                scale: 1.,
+                abbreviation: stringify!($abbreviation),
+                name: $unit_name,
+            };
+        };
     }
 
-    pub const m: SingleUnit = create_fundamental_unit!("m", "meter", length);
-    pub const kg: SingleUnit = create_fundamental_unit!("kg", "kilogram", mass);
-    pub const s: SingleUnit = create_fundamental_unit!("s", "second", time);
-    pub const A: SingleUnit = create_fundamental_unit!("A", "Ampere", current);
-    pub const K: SingleUnit = create_fundamental_unit!("K", "Kelvin", temperature);
-    pub const mol: SingleUnit = create_fundamental_unit!("mol", "mole", amount);
-    pub const cd: SingleUnit = create_fundamental_unit!("cd", "candela", luminosity);
-}
+    create_fundamental_unit!(m, "meter", length);
+    create_fundamental_unit!(kg, "kilogram", mass);
+    create_fundamental_unit!(s, "second", time);
+    create_fundamental_unit!(A, "Ampere", current);
+    create_fundamental_unit!(K, "Kelvin", temperature);
+    create_fundamental_unit!(mol, "mole", amount);
+    create_fundamental_unit!(cd, "candela", luminosity);
 
-#[test]
-fn feature() {
-    let len = 5. * si::m;
-    println!("{len:?}");
+    macro_rules! create_derived_unit {
+        ($name:ident, $abbreviation:literal, $unit_name:literal $(, $unit:ident, $power:literal)*) => {
+            pub const $name: SingleUnit = SingleUnit {
+                length: 0 $(+ $power * $unit.length)*,
+                mass: 0 $(+ $power * $unit.mass)*,
+                time: 0 $(+ $power * $unit.time)*,
+                current: 0 $(+ $power * $unit.current)*,
+                temperature: 0 $(+ $power * $unit.temperature)*,
+                amount: 0 $(+ $power * $unit.amount)*,
+                luminosity: 0 $(+ $power * $unit.luminosity)*,
+                system: SI,
+                scale: 1.,
+                abbreviation: $abbreviation,
+                name: $unit_name,
+            };
+        };
+        ($abbreviation:ident, $unit_name:literal $(, $unit:ident, $power:literal)*) => {
+            pub const $abbreviation: SingleUnit = SingleUnit {
+                length: 0 $(+ $power * $unit.length)*,
+                mass: 0 $(+ $power * $unit.mass)*,
+                time: 0 $(+ $power * $unit.time)*,
+                current: 0 $(+ $power * $unit.current)*,
+                temperature: 0 $(+ $power * $unit.temperature)*,
+                amount: 0 $(+ $power * $unit.amount)*,
+                luminosity: 0 $(+ $power * $unit.luminosity)*,
+                system: SI,
+                scale: 1.,
+                abbreviation: stringify!($abbreviation),
+                name: $unit_name,
+            };
+        };
+    }
+
+    create_derived_unit!(N, "Newton", kg, 1, m, 1, s, -2);
+    create_derived_unit!(J, "Joule", N, 1, m, 1);
+    create_derived_unit!(W, "Watt", J, 1, s, -1);
 }
