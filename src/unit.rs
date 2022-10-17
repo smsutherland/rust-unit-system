@@ -29,59 +29,49 @@ pub trait ToSingle {
     type Single;
 }
 
-impl<
-        Length: Integer,
-        Mass: Integer,
-        Time: Integer,
-        Current: Integer,
-        Temperature: Integer,
-        Amount: Integer,
-        Luminosity: Integer,
-    > ToSingle for CompositeUnit<Length, Mass, Time, Current, Temperature, Amount, Luminosity>
+impl<L: Integer, M: Integer, T: Integer, C: Integer, Te: Integer, A: Integer, Lu: Integer> ToSingle
+    for CompositeUnit<L, M, T, C, Te, A, Lu>
 {
-    type Single = SingleUnit<Length, Mass, Time, Current, Temperature, Amount, Luminosity>;
+    type Single = SingleUnit<L, M, T, C, Te, A, Lu>;
 }
 
 impl<
-        Length1: Integer + Add<Length2>,
-        Mass1: Integer + Add<Mass2>,
-        Time1: Integer + Add<Time2>,
-        Current1: Integer + Add<Current2>,
-        Temperature1: Integer + Add<Temperature2>,
-        Amount1: Integer + Add<Amount2>,
-        Luminosity1: Integer + Add<Luminosity2>,
-        Length2: Integer,
-        Mass2: Integer,
-        Time2: Integer,
-        Current2: Integer,
-        Temperature2: Integer,
-        Amount2: Integer,
-        Luminosity2: Integer,
-    > Mul<CompositeUnit<Length1, Mass1, Time1, Current1, Temperature1, Amount1, Luminosity1>>
-    for CompositeUnit<Length2, Mass2, Time2, Current2, Temperature2, Amount2, Luminosity2>
+        L1: Integer + Add<L2>,
+        M1: Integer + Add<M2>,
+        T1: Integer + Add<T2>,
+        C1: Integer + Add<C2>,
+        Te1: Integer + Add<Te2>,
+        A1: Integer + Add<A2>,
+        Lu1: Integer + Add<Lu2>,
+        L2: Integer,
+        M2: Integer,
+        T2: Integer,
+        C2: Integer,
+        Te2: Integer,
+        A2: Integer,
+        Lu2: Integer,
+    > Mul<CompositeUnit<L1, M1, T1, C1, Te1, A1, Lu1>>
+    for CompositeUnit<L2, M2, T2, C2, Te2, A2, Lu2>
 where
-    Sum<Length1, Length2>: Integer,
-    Sum<Mass1, Mass2>: Integer,
-    Sum<Time1, Time2>: Integer,
-    Sum<Current1, Current2>: Integer,
-    Sum<Temperature1, Temperature2>: Integer,
-    Sum<Amount1, Amount2>: Integer,
-    Sum<Luminosity1, Luminosity2>: Integer,
+    Sum<L1, L2>: Integer,
+    Sum<M1, M2>: Integer,
+    Sum<T1, T2>: Integer,
+    Sum<C1, C2>: Integer,
+    Sum<Te1, Te2>: Integer,
+    Sum<A1, A2>: Integer,
+    Sum<Lu1, Lu2>: Integer,
 {
     type Output = CompositeUnit<
-        Sum<Length1, Length2>,
-        Sum<Mass1, Mass2>,
-        Sum<Time1, Time2>,
-        Sum<Current1, Current2>,
-        Sum<Temperature1, Temperature2>,
-        Sum<Amount1, Amount2>,
-        Sum<Luminosity1, Luminosity2>,
+        Sum<L1, L2>,
+        Sum<M1, M2>,
+        Sum<T1, T2>,
+        Sum<C1, C2>,
+        Sum<Te1, Te2>,
+        Sum<A1, A2>,
+        Sum<Lu1, Lu2>,
     >;
 
-    fn mul(
-        mut self,
-        mut rhs: CompositeUnit<Length1, Mass1, Time1, Current1, Temperature1, Amount1, Luminosity1>,
-    ) -> Self::Output {
+    fn mul(mut self, mut rhs: CompositeUnit<L1, M1, T1, C1, Te1, A1, Lu1>) -> Self::Output {
         // TODO: reduce units
         self.component_units.append(&mut rhs.component_units);
         CompositeUnit {
@@ -98,45 +88,41 @@ where
 }
 
 impl<
-        Length1: Integer + Add<Length2>,
-        Mass1: Integer + Add<Mass2>,
-        Time1: Integer + Add<Time2>,
-        Current1: Integer + Add<Current2>,
-        Temperature1: Integer + Add<Temperature2>,
-        Amount1: Integer + Add<Amount2>,
-        Luminosity1: Integer + Add<Luminosity2>,
-        Length2: Integer,
-        Mass2: Integer,
-        Time2: Integer,
-        Current2: Integer,
-        Temperature2: Integer,
-        Amount2: Integer,
-        Luminosity2: Integer,
-    > Mul<SingleUnit<Length1, Mass1, Time1, Current1, Temperature1, Amount1, Luminosity1>>
-    for CompositeUnit<Length2, Mass2, Time2, Current2, Temperature2, Amount2, Luminosity2>
+        L1: Integer + Add<L2>,
+        M1: Integer + Add<M2>,
+        T1: Integer + Add<T2>,
+        C1: Integer + Add<C2>,
+        Te1: Integer + Add<Te2>,
+        Am1: Integer + Add<A2>,
+        Lu1: Integer + Add<Lu2>,
+        L2: Integer,
+        M2: Integer,
+        T2: Integer,
+        C2: Integer,
+        Te2: Integer,
+        A2: Integer,
+        Lu2: Integer,
+    > Mul<SingleUnit<L1, M1, T1, C1, Te1, Am1, Lu1>> for CompositeUnit<L2, M2, T2, C2, Te2, A2, Lu2>
 where
-    Sum<Length1, Length2>: Integer,
-    Sum<Mass1, Mass2>: Integer,
-    Sum<Time1, Time2>: Integer,
-    Sum<Current1, Current2>: Integer,
-    Sum<Temperature1, Temperature2>: Integer,
-    Sum<Amount1, Amount2>: Integer,
-    Sum<Luminosity1, Luminosity2>: Integer,
+    Sum<L1, L2>: Integer,
+    Sum<M1, M2>: Integer,
+    Sum<T1, T2>: Integer,
+    Sum<C1, C2>: Integer,
+    Sum<Te1, Te2>: Integer,
+    Sum<Am1, A2>: Integer,
+    Sum<Lu1, Lu2>: Integer,
 {
     type Output = CompositeUnit<
-        Sum<Length1, Length2>,
-        Sum<Mass1, Mass2>,
-        Sum<Time1, Time2>,
-        Sum<Current1, Current2>,
-        Sum<Temperature1, Temperature2>,
-        Sum<Amount1, Amount2>,
-        Sum<Luminosity1, Luminosity2>,
+        Sum<L1, L2>,
+        Sum<M1, M2>,
+        Sum<T1, T2>,
+        Sum<C1, C2>,
+        Sum<Te1, Te2>,
+        Sum<Am1, A2>,
+        Sum<Lu1, Lu2>,
     >;
 
-    fn mul(
-        mut self,
-        rhs: SingleUnit<Length1, Mass1, Time1, Current1, Temperature1, Amount1, Luminosity1>,
-    ) -> Self::Output {
+    fn mul(mut self, rhs: SingleUnit<L1, M1, T1, C1, Te1, Am1, Lu1>) -> Self::Output {
         let rhs = rhs.into();
         for (i, (unit, power)) in self.component_units.iter_mut().enumerate() {
             if *unit == rhs {
@@ -171,20 +157,10 @@ where
     }
 }
 
-impl<
-        Length: Integer,
-        Mass: Integer,
-        Time: Integer,
-        Current: Integer,
-        Temperature: Integer,
-        Amount: Integer,
-        Luminosity: Integer,
-    > From<SingleUnit<Length, Mass, Time, Current, Temperature, Amount, Luminosity>>
-    for CompositeUnit<Length, Mass, Time, Current, Temperature, Amount, Luminosity>
+impl<L: Integer, M: Integer, T: Integer, C: Integer, Te: Integer, A: Integer, Lu: Integer>
+    From<SingleUnit<L, M, T, C, Te, A, Lu>> for CompositeUnit<L, M, T, C, Te, A, Lu>
 {
-    fn from(
-        other: SingleUnit<Length, Mass, Time, Current, Temperature, Amount, Luminosity>,
-    ) -> Self {
+    fn from(other: SingleUnit<L, M, T, C, Te, A, Lu>) -> Self {
         CompositeUnit {
             component_units: vec![(other.into(), 1)],
             _length_marker: PhantomData,
@@ -198,15 +174,8 @@ impl<
     }
 }
 
-impl<
-        Length: Integer,
-        Mass: Integer,
-        Time: Integer,
-        Current: Integer,
-        Temperature: Integer,
-        Amount: Integer,
-        Luminosity: Integer,
-    > Display for CompositeUnit<Length, Mass, Time, Current, Temperature, Amount, Luminosity>
+impl<L: Integer, M: Integer, T: Integer, C: Integer, Te: Integer, A: Integer, Lu: Integer> Display
+    for CompositeUnit<L, M, T, C, Te, A, Lu>
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for (i, (unit, power)) in self.component_units.iter().enumerate() {
@@ -249,15 +218,8 @@ where
     _luminosity_marker: PhantomData<Luminosity>,
 }
 
-impl<
-        Length: Integer,
-        Mass: Integer,
-        Time: Integer,
-        Current: Integer,
-        Temperature: Integer,
-        Amount: Integer,
-        Luminosity: Integer,
-    > std::fmt::Debug for SingleUnit<Length, Mass, Time, Current, Temperature, Amount, Luminosity>
+impl<L: Integer, M: Integer, T: Integer, C: Integer, Te: Integer, Am: Integer, Lu: Integer>
+    std::fmt::Debug for SingleUnit<L, M, T, C, Te, Am, Lu>
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.abbreviation)
@@ -265,44 +227,43 @@ impl<
 }
 
 impl<
-        Length: Integer + Mul<Power>,
-        Mass: Integer + Mul<Power>,
-        Time: Integer + Mul<Power>,
-        Current: Integer + Mul<Power>,
-        Temperature: Integer + Mul<Power>,
-        Amount: Integer + Mul<Power>,
-        Luminosity: Integer + Mul<Power>,
+        L: Integer + Mul<Power>,
+        M: Integer + Mul<Power>,
+        T: Integer + Mul<Power>,
+        C: Integer + Mul<Power>,
+        Te: Integer + Mul<Power>,
+        A: Integer + Mul<Power>,
+        Lu: Integer + Mul<Power>,
         Power: Integer,
-    > Pow<Power> for SingleUnit<Length, Mass, Time, Current, Temperature, Amount, Luminosity>
+    > Pow<Power> for SingleUnit<L, M, T, C, Te, A, Lu>
 where
-    Prod<Length, Power>: Integer,
-    Prod<Mass, Power>: Integer,
-    Prod<Time, Power>: Integer,
-    Prod<Current, Power>: Integer,
-    Prod<Temperature, Power>: Integer,
-    Prod<Amount, Power>: Integer,
-    Prod<Luminosity, Power>: Integer,
+    Prod<L, Power>: Integer,
+    Prod<M, Power>: Integer,
+    Prod<T, Power>: Integer,
+    Prod<C, Power>: Integer,
+    Prod<Te, Power>: Integer,
+    Prod<A, Power>: Integer,
+    Prod<Lu, Power>: Integer,
 {
     type Output = SingleUnit<
-        Prod<Length, Power>,
-        Prod<Mass, Power>,
-        Prod<Time, Power>,
-        Prod<Current, Power>,
-        Prod<Temperature, Power>,
-        Prod<Amount, Power>,
-        Prod<Luminosity, Power>,
+        Prod<L, Power>,
+        Prod<M, Power>,
+        Prod<T, Power>,
+        Prod<C, Power>,
+        Prod<Te, Power>,
+        Prod<A, Power>,
+        Prod<Lu, Power>,
     >;
 }
 
-impl<Length, Mass, Time, Current, Temperature, Amount, Luminosity>
-    SingleUnit<Length, Mass, Time, Current, Temperature, Amount, Luminosity>
+impl<L, M, T, C, Te, A, Lu> SingleUnit<L, M, T, C, Te, A, Lu>
 where
-    Length: Integer,
-    Mass: Integer,
-    Current: Integer,
-    Temperature: Integer,
-    Amount: Integer,
-    Luminosity: Integer,
+    L: Integer,
+    M: Integer,
+    C: Integer,
+    Te: Integer,
+    A: Integer,
+    Lu: Integer,
 {
     pub fn abbreviation(&self) -> &'static str {
         self.abbreviation
@@ -314,45 +275,41 @@ where
 }
 
 impl<
-        Length1: Integer + Add<Length2>,
-        Mass1: Integer + Add<Mass2>,
-        Time1: Integer + Add<Time2>,
-        Current1: Integer + Add<Current2>,
-        Temperature1: Integer + Add<Temperature2>,
-        Amount1: Integer + Add<Amount2>,
-        Luminosity1: Integer + Add<Luminosity2>,
-        Length2: Integer,
-        Mass2: Integer,
-        Time2: Integer,
-        Current2: Integer,
-        Temperature2: Integer,
-        Amount2: Integer,
-        Luminosity2: Integer,
-    > Mul<SingleUnit<Length1, Mass1, Time1, Current1, Temperature1, Amount1, Luminosity1>>
-    for SingleUnit<Length2, Mass2, Time2, Current2, Temperature2, Amount2, Luminosity2>
+        L1: Integer + Add<L2>,
+        M1: Integer + Add<M2>,
+        T1: Integer + Add<T2>,
+        C1: Integer + Add<C2>,
+        Te1: Integer + Add<Te2>,
+        A1: Integer + Add<A2>,
+        Lu1: Integer + Add<Lu2>,
+        L2: Integer,
+        M2: Integer,
+        T2: Integer,
+        C2: Integer,
+        Te2: Integer,
+        A2: Integer,
+        Lu2: Integer,
+    > Mul<SingleUnit<L1, M1, T1, C1, Te1, A1, Lu1>> for SingleUnit<L2, M2, T2, C2, Te2, A2, Lu2>
 where
-    Sum<Length1, Length2>: Integer,
-    Sum<Mass1, Mass2>: Integer,
-    Sum<Time1, Time2>: Integer,
-    Sum<Current1, Current2>: Integer,
-    Sum<Temperature1, Temperature2>: Integer,
-    Sum<Amount1, Amount2>: Integer,
-    Sum<Luminosity1, Luminosity2>: Integer,
+    Sum<L1, L2>: Integer,
+    Sum<M1, M2>: Integer,
+    Sum<T1, T2>: Integer,
+    Sum<C1, C2>: Integer,
+    Sum<Te1, Te2>: Integer,
+    Sum<A1, A2>: Integer,
+    Sum<Lu1, Lu2>: Integer,
 {
     type Output = CompositeUnit<
-        Sum<Length1, Length2>,
-        Sum<Mass1, Mass2>,
-        Sum<Time1, Time2>,
-        Sum<Current1, Current2>,
-        Sum<Temperature1, Temperature2>,
-        Sum<Amount1, Amount2>,
-        Sum<Luminosity1, Luminosity2>,
+        Sum<L1, L2>,
+        Sum<M1, M2>,
+        Sum<T1, T2>,
+        Sum<C1, C2>,
+        Sum<Te1, Te2>,
+        Sum<A1, A2>,
+        Sum<Lu1, Lu2>,
     >;
 
-    fn mul(
-        self,
-        rhs: SingleUnit<Length1, Mass1, Time1, Current1, Temperature1, Amount1, Luminosity1>,
-    ) -> Self::Output {
+    fn mul(self, rhs: SingleUnit<L1, M1, T1, C1, Te1, A1, Lu1>) -> Self::Output {
         CompositeUnit {
             component_units: vec![(self.into(), 1), (rhs.into(), 1)],
             _length_marker: PhantomData,
@@ -367,60 +324,49 @@ where
 }
 
 impl<
-        Length1: Integer,
-        Mass1: Integer,
-        Time1: Integer,
-        Current1: Integer,
-        Temperature1: Integer,
-        Amount1: Integer,
-        Luminosity1: Integer,
-        Length2: Integer + Add<Length1>,
-        Mass2: Integer + Add<Mass1>,
-        Time2: Integer + Add<Time1>,
-        Current2: Integer + Add<Current1>,
-        Temperature2: Integer + Add<Temperature1>,
-        Amount2: Integer + Add<Amount1>,
-        Luminosity2: Integer + Add<Luminosity1>,
-    > Mul<CompositeUnit<Length1, Mass1, Time1, Current1, Temperature1, Amount1, Luminosity1>>
-    for SingleUnit<Length2, Mass2, Time2, Current2, Temperature2, Amount2, Luminosity2>
+        L1: Integer,
+        M1: Integer,
+        T1: Integer,
+        C1: Integer,
+        Te1: Integer,
+        A1: Integer,
+        Lu1: Integer,
+        L2: Integer + Add<L1>,
+        M2: Integer + Add<M1>,
+        T2: Integer + Add<T1>,
+        C2: Integer + Add<C1>,
+        Te2: Integer + Add<Te1>,
+        A2: Integer + Add<A1>,
+        Lu2: Integer + Add<Lu1>,
+    > Mul<CompositeUnit<L1, M1, T1, C1, Te1, A1, Lu1>> for SingleUnit<L2, M2, T2, C2, Te2, A2, Lu2>
 where
-    Sum<Length2, Length1>: Integer,
-    Sum<Mass2, Mass1>: Integer,
-    Sum<Time2, Time1>: Integer,
-    Sum<Current2, Current1>: Integer,
-    Sum<Temperature2, Temperature1>: Integer,
-    Sum<Amount2, Amount1>: Integer,
-    Sum<Luminosity2, Luminosity1>: Integer,
+    Sum<L2, L1>: Integer,
+    Sum<M2, M1>: Integer,
+    Sum<T2, T1>: Integer,
+    Sum<C2, C1>: Integer,
+    Sum<Te2, Te1>: Integer,
+    Sum<A2, A1>: Integer,
+    Sum<Lu2, Lu1>: Integer,
 {
     type Output = CompositeUnit<
-        Sum<Length2, Length1>,
-        Sum<Mass2, Mass1>,
-        Sum<Time2, Time1>,
-        Sum<Current2, Current1>,
-        Sum<Temperature2, Temperature1>,
-        Sum<Amount2, Amount1>,
-        Sum<Luminosity2, Luminosity1>,
+        Sum<L2, L1>,
+        Sum<M2, M1>,
+        Sum<T2, T1>,
+        Sum<C2, C1>,
+        Sum<Te2, Te1>,
+        Sum<A2, A1>,
+        Sum<Lu2, Lu1>,
     >;
 
-    fn mul(
-        self,
-        rhs: CompositeUnit<Length1, Mass1, Time1, Current1, Temperature1, Amount1, Luminosity1>,
-    ) -> Self::Output {
+    fn mul(self, rhs: CompositeUnit<L1, M1, T1, C1, Te1, A1, Lu1>) -> Self::Output {
         rhs * self
     }
 }
 
-impl<
-        Length: Integer,
-        Mass: Integer,
-        Time: Integer,
-        Current: Integer,
-        Temperature: Integer,
-        Amount: Integer,
-        Luminosity: Integer,
-    > Div for SingleUnit<Length, Mass, Time, Current, Temperature, Amount, Luminosity>
+impl<L: Integer, M: Integer, T: Integer, C: Integer, Te: Integer, A: Integer, Lu: Integer> Div
+    for SingleUnit<L, M, T, C, Te, A, Lu>
 {
-    type Output = CompositeUnit<Length, Mass, Time, Current, Temperature, Amount, Luminosity>;
+    type Output = CompositeUnit<L, M, T, C, Te, A, Lu>;
 
     fn div(self, rhs: Self) -> Self::Output {
         CompositeUnit {
@@ -436,39 +382,22 @@ impl<
     }
 }
 
-impl<
-        Length: Integer,
-        Mass: Integer,
-        Time: Integer,
-        Current: Integer,
-        Temperature: Integer,
-        Amount: Integer,
-        Luminosity: Integer,
-    > Mul<f32> for SingleUnit<Length, Mass, Time, Current, Temperature, Amount, Luminosity>
+impl<L: Integer, M: Integer, T: Integer, C: Integer, Te: Integer, A: Integer, Lu: Integer> Mul<f32>
+    for SingleUnit<L, M, T, C, Te, A, Lu>
 {
-    type Output = SingleQuantity<Length, Mass, Time, Current, Temperature, Amount, Luminosity>;
+    type Output = SingleQuantity<L, M, T, C, Te, A, Lu>;
 
     fn mul(self, rhs: f32) -> Self::Output {
         SingleQuantity::new(self.into(), rhs)
     }
 }
 
-impl<
-        Length: Integer,
-        Mass: Integer,
-        Time: Integer,
-        Current: Integer,
-        Temperature: Integer,
-        Amount: Integer,
-        Luminosity: Integer,
-    > Mul<SingleUnit<Length, Mass, Time, Current, Temperature, Amount, Luminosity>> for f32
+impl<L: Integer, M: Integer, T: Integer, C: Integer, Te: Integer, A: Integer, Lu: Integer>
+    Mul<SingleUnit<L, M, T, C, Te, A, Lu>> for f32
 {
-    type Output = SingleQuantity<Length, Mass, Time, Current, Temperature, Amount, Luminosity>;
+    type Output = SingleQuantity<L, M, T, C, Te, A, Lu>;
 
-    fn mul(
-        self,
-        rhs: SingleUnit<Length, Mass, Time, Current, Temperature, Amount, Luminosity>,
-    ) -> Self::Output {
+    fn mul(self, rhs: SingleUnit<L, M, T, C, Te, A, Lu>) -> Self::Output {
         SingleQuantity::new(rhs.into(), self)
     }
 }
@@ -488,27 +417,18 @@ struct DynUnit {
     name: &'static str,
 }
 
-impl<
-        Length: Integer,
-        Mass: Integer,
-        Time: Integer,
-        Current: Integer,
-        Temperature: Integer,
-        Amount: Integer,
-        Luminosity: Integer,
-    > From<SingleUnit<Length, Mass, Time, Current, Temperature, Amount, Luminosity>> for DynUnit
+impl<L: Integer, M: Integer, T: Integer, C: Integer, Te: Integer, A: Integer, Lu: Integer>
+    From<SingleUnit<L, M, T, C, Te, A, Lu>> for DynUnit
 {
-    fn from(
-        other: SingleUnit<Length, Mass, Time, Current, Temperature, Amount, Luminosity>,
-    ) -> Self {
+    fn from(other: SingleUnit<L, M, T, C, Te, A, Lu>) -> Self {
         Self {
-            length: Length::to_i8(),
-            mass: Mass::to_i8(),
-            time: Time::to_i8(),
-            current: Current::to_i8(),
-            temperature: Temperature::to_i8(),
-            amount: Amount::to_i8(),
-            luminosity: Luminosity::to_i8(),
+            length: L::to_i8(),
+            mass: M::to_i8(),
+            time: T::to_i8(),
+            current: C::to_i8(),
+            temperature: Te::to_i8(),
+            amount: A::to_i8(),
+            luminosity: Lu::to_i8(),
             system: other.system,
             scale: other.scale,
             abbreviation: other.abbreviation,
