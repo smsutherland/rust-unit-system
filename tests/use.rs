@@ -13,6 +13,14 @@ fn combine_units() {
 }
 
 #[test]
+fn combine_quantities() {
+    let length = 2. * u::m;
+    let width = 4.*u::m;
+    let area = length * width;
+    println!("{area}");
+}
+
+#[test]
 fn using_non_base_units() {
     let energy = 1. * u::J;
     println!("{energy}");

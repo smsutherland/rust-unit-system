@@ -3,7 +3,7 @@ use std::fmt::Display;
 use std::ops::{Add, Mul};
 use typenum::{Integer, Sum};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SingleQuantity<Length, Mass, Time, Current, Temperature, Amount, Luminosity>
 where
     Length: Integer,

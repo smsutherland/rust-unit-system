@@ -4,7 +4,7 @@ use std::marker::PhantomData;
 use std::ops::{Add, Div, Mul};
 use typenum::{Integer, Prod, Sum, P1, Z0};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CompositeUnit<Length, Mass, Time, Current, Temperature, Amount, Luminosity>
 where
     Length: Integer,
@@ -71,9 +71,29 @@ where
         Sum<Lu1, Lu2>,
     >;
 
-    fn mul(mut self, mut rhs: CompositeUnit<L1, M1, T1, C1, Te1, A1, Lu1>) -> Self::Output {
-        // TODO: reduce units
-        self.component_units.append(&mut rhs.component_units);
+    fn mul(mut self, rhs: CompositeUnit<L1, M1, T1, C1, Te1, A1, Lu1>) -> Self::Output {
+        let mut new_units = Vec::new();
+        for (unit2, power2) in &rhs.component_units {
+            let mut matched_unit = false;
+            for (unit1, power1) in &mut self.component_units {
+                if unit1 == unit2 {
+                    *power1 += *power2;
+                    matched_unit = true;
+                    break;
+                }
+            }
+            if !matched_unit {
+                new_units.push((unit2.clone(), *power2));
+            }
+        }
+
+        self.component_units = self
+            .component_units
+            .into_iter()
+            .filter(|(_, power)| *power != 0)
+            .collect();
+
+        self.component_units.append(&mut new_units);
         CompositeUnit {
             component_units: self.component_units,
             _length_marker: PhantomData,
@@ -402,7 +422,7 @@ impl<L: Integer, M: Integer, T: Integer, C: Integer, Te: Integer, A: Integer, Lu
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 struct DynUnit {
     length: i8,
     mass: i8,
@@ -437,7 +457,7 @@ impl<L: Integer, M: Integer, T: Integer, C: Integer, Te: Integer, A: Integer, Lu
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct UnitSystem {
     length: BaseUnit<Length>,
     mass: BaseUnit<Mass>,
@@ -451,7 +471,7 @@ pub struct UnitSystem {
 macro_rules! unit_kinds {
     ($($units:ident),*) => {
         $(
-            #[derive(Debug, PartialEq)]
+            #[derive(Debug, Clone, PartialEq)]
             pub struct $units;
             impl UnitKind for $units {}
         )*
@@ -460,7 +480,7 @@ macro_rules! unit_kinds {
 
 unit_kinds!(Length, Mass, Time, Current, Temperature, Amount, Luminosity);
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct BaseUnit<Kind: UnitKind> {
     scale_from_si: f32,
     _marker: PhantomData<Kind>,
@@ -606,4 +626,14 @@ pub mod si {
     create_derived_unit!(N, "N", "Newton", kg, P1, m, P1, s, N2);
     create_derived_unit!(J, "J", "Joule", N, P1, m, P1);
     create_derived_unit!(W, "W", "Watt", J, P1, s, N1);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unit_equality() {
+        assert_eq!(si::m, si::m);
+    }
 }
