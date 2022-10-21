@@ -24,6 +24,16 @@ impl<L: Integer, M: Integer, T: Integer, C: Integer, Te: Integer, A: Integer, Lu
     pub fn new(unit: CompositeUnit<L, M, T, C, Te, A, Lu>, scalar: f32) -> Self {
         Self { unit, scalar }
     }
+
+    pub fn to(&self, unit: impl Into<CompositeUnit<L, M, T, C, Te, A, Lu>>) -> Self {
+        let unit = unit.into();
+        let source_scale = self.unit.scale_factor();
+        let target_scale = unit.scale_factor();
+        Self {
+            unit,
+            scalar: self.scalar * target_scale / source_scale,
+        }
+    }
 }
 
 impl<

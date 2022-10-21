@@ -25,6 +25,20 @@ where
     _luminosity_marker: PhantomData<Luminosity>,
 }
 
+impl<L: Integer, M: Integer, T: Integer, C: Integer, Te: Integer, A: Integer, Lu: Integer>
+    CompositeUnit<L, M, T, C, Te, A, Lu>
+{
+    pub(crate) fn scale_factor(&self) -> f32 {
+        let mut res = 1.;
+        for (unit, power) in &self.component_units {
+            for _ in 0..*power {
+                res *= unit.scale;
+            }
+        }
+        res
+    }
+}
+
 pub trait ToSingle {
     type Single;
 }
