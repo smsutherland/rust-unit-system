@@ -1,4 +1,4 @@
-use unit as u;
+use units as u;
 
 #[test]
 fn create_quantity() {
@@ -15,7 +15,7 @@ fn combine_units() {
 #[test]
 fn combine_quantities() {
     let length = 2. * u::m;
-    let width = 4.*u::m;
+    let width = 4. * u::m;
     let area = length * width;
     println!("{area}");
 }
