@@ -3,8 +3,16 @@ pub use composite::CompositeUnit;
 mod single;
 pub use single::SingleUnit;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct DynKind;
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub struct DynKind {
+    length: i8,
+    mass: i8,
+    time: i8,
+    current: i8,
+    temperature: i8,
+    amount: i8,
+    luminosiy: i8,
+}
 
 #[derive(Debug, Clone, PartialEq)]
 struct DynUnit {
@@ -37,6 +45,9 @@ trait UnitFmt {
 struct Length;
 impl UnitKind for Length {
     fn to_dynkind() -> DynKind {
-        todo!()
+        DynKind {
+            length: 1,
+            ..DynKind::default()
+        }
     }
 }

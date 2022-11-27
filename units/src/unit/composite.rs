@@ -3,7 +3,7 @@ use super::{single::ToSingle, DynUnit, SingleUnit, UnitKind};
 use std::fmt::Display;
 use std::marker::PhantomData;
 use std::ops::{Add, Div, Mul, Sub};
-use typenum::{Diff, Prod, Quot, Sum};
+use typenum::{Diff, Integer, Prod, Quot, Sum};
 
 #[derive(Debug, Clone)]
 pub struct CompositeUnit<Kind: UnitKind> {
@@ -201,9 +201,19 @@ impl<L, M, T, C, Te, A, Lu> Default for CompositeUnitKind<L, M, T, C, Te, A, Lu>
     }
 }
 
-impl<L, M, T, C, Te, A, Lu> UnitKind for CompositeUnitKind<L, M, T, C, Te, A, Lu> {
+impl<L: Integer, M: Integer, T: Integer, C: Integer, Te: Integer, A: Integer, Lu: Integer> UnitKind
+    for CompositeUnitKind<L, M, T, C, Te, A, Lu>
+{
     fn to_dynkind() -> DynKind {
-        DynKind
+        DynKind {
+            length: L::to_i8(),
+            mass: M::to_i8(),
+            time: T::to_i8(),
+            current: C::to_i8(),
+            temperature: Te::to_i8(),
+            amount: A::to_i8(),
+            luminosiy: Lu::to_i8(),
+        }
     }
 }
 
