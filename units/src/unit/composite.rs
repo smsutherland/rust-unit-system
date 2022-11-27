@@ -1,3 +1,4 @@
+use super::DynKind;
 use super::{single::ToSingle, DynUnit, SingleUnit, UnitKind};
 use std::fmt::Display;
 use std::marker::PhantomData;
@@ -201,8 +202,8 @@ impl<L, M, T, C, Te, A, Lu> Default for CompositeUnitKind<L, M, T, C, Te, A, Lu>
 }
 
 impl<L, M, T, C, Te, A, Lu> UnitKind for CompositeUnitKind<L, M, T, C, Te, A, Lu> {
-    fn to_dynkind() -> super::DynKind {
-        todo!()
+    fn to_dynkind() -> DynKind {
+        DynKind
     }
 }
 
