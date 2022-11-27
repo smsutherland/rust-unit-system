@@ -1,10 +1,9 @@
-use std::marker::PhantomData;
 mod composite;
 pub use composite::CompositeUnit;
 mod single;
 pub use single::SingleUnit;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DynKind;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -26,12 +25,6 @@ impl<Kind: UnitKind> From<SingleUnit<Kind>> for DynUnit {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct BaseUnit<Kind: UnitKind> {
-    scale_from_si: f32,
-    _marker: PhantomData<Kind>,
-}
-
 pub trait UnitKind {
     fn to_dynkind() -> DynKind;
 }
@@ -39,4 +32,11 @@ pub trait UnitKind {
 trait UnitFmt {
     fn abbrevation() -> &'static str;
     fn name() -> &'static str;
+}
+
+struct Length;
+impl UnitKind for Length {
+    fn to_dynkind() -> DynKind {
+        todo!()
+    }
 }

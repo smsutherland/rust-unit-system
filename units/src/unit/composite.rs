@@ -1,8 +1,8 @@
 use super::{single::ToSingle, DynUnit, SingleUnit, UnitKind};
 use std::fmt::Display;
 use std::marker::PhantomData;
-use std::ops::{Div, Mul};
-use typenum::{Prod, Quot};
+use std::ops::{Add, Div, Mul, Sub};
+use typenum::{Diff, Prod, Quot, Sum};
 
 #[derive(Debug, Clone)]
 pub struct CompositeUnit<Kind: UnitKind> {
@@ -31,6 +31,64 @@ impl<Kind: UnitKind> CompositeUnit<Kind> {
 
 impl<Kind: UnitKind> ToSingle for CompositeUnit<Kind> {
     type Single = SingleUnit<Kind>;
+}
+
+impl<Kind1: UnitKind, Kind2: UnitKind> Mul<CompositeUnit<Kind2>> for CompositeUnit<Kind1>
+where
+    Kind1: Mul<Kind2>,
+    Prod<Kind1, Kind2>: UnitKind,
+{
+    type Output = CompositeUnit<Prod<Kind1, Kind2>>;
+    fn mul(mut self, rhs: CompositeUnit<Kind2>) -> Self::Output {
+        let mut new_units = Vec::new();
+        for (unit2, power2) in &rhs.component_units {
+            let mut matched_unit = false;
+            for (unit1, power1) in &mut self.component_units {
+                if unit1 == unit2 {
+                    *power1 += *power2;
+                    matched_unit = false;
+                    break;
+                }
+            }
+            if !matched_unit {
+                new_units.push((unit2.clone(), *power2));
+            }
+        }
+        self.component_units.append(&mut new_units);
+        CompositeUnit {
+            component_units: self.component_units,
+            _kind_marker: PhantomData,
+        }
+    }
+}
+
+impl<Kind1: UnitKind, Kind2: UnitKind> Div<CompositeUnit<Kind2>> for CompositeUnit<Kind1>
+where
+    Kind1: Div<Kind2>,
+    Quot<Kind1, Kind2>: UnitKind,
+{
+    type Output = CompositeUnit<Quot<Kind1, Kind2>>;
+    fn div(mut self, rhs: CompositeUnit<Kind2>) -> Self::Output {
+        let mut new_units = Vec::new();
+        for (unit2, power2) in &rhs.component_units {
+            let mut matched_unit = false;
+            for (unit1, power1) in &mut self.component_units {
+                if unit1 == unit2 {
+                    *power1 -= *power2;
+                    matched_unit = false;
+                    break;
+                }
+            }
+            if !matched_unit {
+                new_units.push((unit2.clone(), -*power2));
+            }
+        }
+        self.component_units.append(&mut new_units);
+        CompositeUnit {
+            component_units: self.component_units,
+            _kind_marker: PhantomData,
+        }
+    }
 }
 
 impl<Kind1: UnitKind, Kind2: UnitKind> Mul<SingleUnit<Kind2>> for CompositeUnit<Kind1>
@@ -63,31 +121,32 @@ where
     }
 }
 
-impl<Kind1: UnitKind, Kind2: UnitKind> Mul<CompositeUnit<Kind2>> for CompositeUnit<Kind1>
+impl<Kind1: UnitKind, Kind2: UnitKind> Div<SingleUnit<Kind2>> for CompositeUnit<Kind1>
 where
-    Kind1: Mul<Kind2>,
-    Prod<Kind1, Kind2>: UnitKind,
+    Kind1: Div<Kind2>,
+    Quot<Kind1, Kind2>: UnitKind,
 {
-    type Output = CompositeUnit<Prod<Kind1, Kind2>>;
-    fn mul(mut self, rhs: CompositeUnit<Kind2>) -> Self::Output {
-        let mut new_units = Vec::new();
-        for (unit2, power2) in &rhs.component_units {
-            let mut matched_unit = false;
-            for (unit1, power1) in &mut self.component_units {
-                if unit1 == unit2 {
-                    *power1 += *power2;
-                    matched_unit = false;
-                    break;
+    type Output = CompositeUnit<Quot<Kind1, Kind2>>;
+
+    fn div(mut self, rhs: SingleUnit<Kind2>) -> Self::Output {
+        let rhs = rhs.into();
+        for (i, (unit, power)) in self.component_units.iter_mut().enumerate() {
+            if *unit == rhs {
+                if *power == 1 {
+                    self.component_units.swap_remove(i);
+                } else {
+                    *power -= 1;
                 }
-            }
-            if !matched_unit {
-                new_units.push((unit2.clone(), *power2));
+                return CompositeUnit {
+                    _kind_marker: PhantomData,
+                    component_units: self.component_units,
+                };
             }
         }
-        self.component_units.append(&mut new_units);
+        self.component_units.push((rhs, -1));
         CompositeUnit {
-            component_units: self.component_units,
             _kind_marker: PhantomData,
+            component_units: self.component_units,
         }
     }
 }
@@ -113,5 +172,90 @@ impl<Kind: UnitKind> Display for CompositeUnit<Kind> {
             }
         }
         Ok(())
+    }
+}
+
+#[derive(Debug)]
+struct CompositeUnitKind<Length, Mass, Time, Current, Temperature, Amount, Luminosity> {
+    _length_marker: PhantomData<Length>,
+    _mass_marker: PhantomData<Mass>,
+    _time_marker: PhantomData<Time>,
+    _current_marker: PhantomData<Current>,
+    _temperature_marker: PhantomData<Temperature>,
+    _amount_marker: PhantomData<Amount>,
+    _luminosity_marker: PhantomData<Luminosity>,
+}
+
+impl<L, M, T, C, Te, A, Lu> Default for CompositeUnitKind<L, M, T, C, Te, A, Lu> {
+    fn default() -> Self {
+        Self {
+            _length_marker: PhantomData,
+            _mass_marker: PhantomData,
+            _time_marker: PhantomData,
+            _current_marker: PhantomData,
+            _temperature_marker: PhantomData,
+            _amount_marker: PhantomData,
+            _luminosity_marker: PhantomData,
+        }
+    }
+}
+
+impl<L, M, T, C, Te, A, Lu> UnitKind for CompositeUnitKind<L, M, T, C, Te, A, Lu> {
+    fn to_dynkind() -> super::DynKind {
+        todo!()
+    }
+}
+
+impl<L1, M1, T1, C1, Te1, A1, Lu1, L2, M2, T2, C2, Te2, A2, Lu2>
+    Mul<CompositeUnitKind<L2, M2, T2, C2, Te2, A2, Lu2>>
+    for CompositeUnitKind<L1, M1, T1, C1, Te1, A1, Lu1>
+where
+    L1: Add<L2>,
+    M1: Add<M2>,
+    T1: Add<T2>,
+    C1: Add<C2>,
+    Te1: Add<Te2>,
+    A1: Add<A2>,
+    Lu1: Add<Lu2>,
+{
+    type Output = CompositeUnitKind<
+        Sum<L1, L2>,
+        Sum<M1, M2>,
+        Sum<T1, T2>,
+        Sum<C1, C2>,
+        Sum<Te1, Te2>,
+        Sum<A1, A2>,
+        Sum<Lu1, Lu2>,
+    >;
+
+    fn mul(self, _: CompositeUnitKind<L2, M2, T2, C2, Te2, A2, Lu2>) -> Self::Output {
+        Self::Output::default()
+    }
+}
+
+impl<L1, M1, T1, C1, Te1, A1, Lu1, L2, M2, T2, C2, Te2, A2, Lu2>
+    Div<CompositeUnitKind<L2, M2, T2, C2, Te2, A2, Lu2>>
+    for CompositeUnitKind<L1, M1, T1, C1, Te1, A1, Lu1>
+where
+    L1: Sub<L2>,
+    M1: Sub<M2>,
+    T1: Sub<T2>,
+    C1: Sub<C2>,
+    Te1: Sub<Te2>,
+    A1: Sub<A2>,
+    Lu1: Sub<Lu2>,
+{
+    type Output = CompositeUnitKind<
+        Diff<L1, L2>,
+        Diff<M1, M2>,
+        Diff<T1, T2>,
+        Diff<C1, C2>,
+        Diff<Te1, Te2>,
+        Diff<A1, A2>,
+        Diff<Lu1, Lu2>,
+    >;
+
+    fn div(self, _: CompositeUnitKind<L2, M2, T2, C2, Te2, A2, Lu2>) -> Self::Output {
+        Self::Output::default()
     }
 }
