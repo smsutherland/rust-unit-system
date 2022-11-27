@@ -7,4 +7,5 @@ edition = "2021"
 
 [dependencies]
 typenum = "1.15.0"
+# units-macros = { path = "../units-macros" }
 

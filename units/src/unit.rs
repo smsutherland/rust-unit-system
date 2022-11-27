@@ -1,33 +1,16 @@
 use crate::quantity::SingleQuantity;
 use std::fmt::Display;
 use std::marker::PhantomData;
-use std::ops::{Add, Div, Mul};
-use typenum::{Integer, Prod, Sum, P1, Z0};
+use std::ops::{Div, Mul};
+use typenum::{Prod, Quot};
 
 #[derive(Debug, Clone)]
-pub struct CompositeUnit<Length, Mass, Time, Current, Temperature, Amount, Luminosity>
-where
-    Length: Integer,
-    Mass: Integer,
-    Time: Integer,
-    Current: Integer,
-    Temperature: Integer,
-    Amount: Integer,
-    Luminosity: Integer,
-{
+pub struct CompositeUnit<Kind: UnitKind> {
     component_units: Vec<(DynUnit, i8)>,
-    _length_marker: PhantomData<Length>,
-    _mass_marker: PhantomData<Mass>,
-    _time_marker: PhantomData<Time>,
-    _current_marker: PhantomData<Current>,
-    _temperature_marker: PhantomData<Temperature>,
-    _amount_marker: PhantomData<Amount>,
-    _luminosity_marker: PhantomData<Luminosity>,
+    _kind_marker: PhantomData<Kind>,
 }
 
-impl<L: Integer, M: Integer, T: Integer, C: Integer, Te: Integer, A: Integer, Lu: Integer>
-    CompositeUnit<L, M, T, C, Te, A, Lu>
-{
+impl<Kind: UnitKind> CompositeUnit<Kind> {
     pub(crate) fn scale_factor(&self) -> f32 {
         let mut res = 1.;
         for (unit, power) in &self.component_units {
@@ -43,120 +26,18 @@ pub trait ToSingle {
     type Single;
 }
 
-impl<L: Integer, M: Integer, T: Integer, C: Integer, Te: Integer, A: Integer, Lu: Integer> ToSingle
-    for CompositeUnit<L, M, T, C, Te, A, Lu>
-{
-    type Single = SingleUnit<L, M, T, C, Te, A, Lu>;
+impl<Kind: UnitKind> ToSingle for CompositeUnit<Kind> {
+    type Single = SingleUnit<Kind>;
 }
 
-impl<
-        L1: Integer + Add<L2>,
-        M1: Integer + Add<M2>,
-        T1: Integer + Add<T2>,
-        C1: Integer + Add<C2>,
-        Te1: Integer + Add<Te2>,
-        A1: Integer + Add<A2>,
-        Lu1: Integer + Add<Lu2>,
-        L2: Integer,
-        M2: Integer,
-        T2: Integer,
-        C2: Integer,
-        Te2: Integer,
-        A2: Integer,
-        Lu2: Integer,
-    > Mul<CompositeUnit<L1, M1, T1, C1, Te1, A1, Lu1>>
-    for CompositeUnit<L2, M2, T2, C2, Te2, A2, Lu2>
+impl<Kind1: UnitKind, Kind2: UnitKind> Mul<SingleUnit<Kind2>> for CompositeUnit<Kind1>
 where
-    Sum<L1, L2>: Integer,
-    Sum<M1, M2>: Integer,
-    Sum<T1, T2>: Integer,
-    Sum<C1, C2>: Integer,
-    Sum<Te1, Te2>: Integer,
-    Sum<A1, A2>: Integer,
-    Sum<Lu1, Lu2>: Integer,
+    Kind1: Mul<Kind2>,
+    Prod<Kind1, Kind2>: UnitKind,
 {
-    type Output = CompositeUnit<
-        Sum<L1, L2>,
-        Sum<M1, M2>,
-        Sum<T1, T2>,
-        Sum<C1, C2>,
-        Sum<Te1, Te2>,
-        Sum<A1, A2>,
-        Sum<Lu1, Lu2>,
-    >;
+    type Output = CompositeUnit<Prod<Kind1, Kind2>>;
 
-    fn mul(mut self, rhs: CompositeUnit<L1, M1, T1, C1, Te1, A1, Lu1>) -> Self::Output {
-        let mut new_units = Vec::new();
-        for (unit2, power2) in &rhs.component_units {
-            let mut matched_unit = false;
-            for (unit1, power1) in &mut self.component_units {
-                if unit1 == unit2 {
-                    *power1 += *power2;
-                    matched_unit = true;
-                    break;
-                }
-            }
-            if !matched_unit {
-                new_units.push((unit2.clone(), *power2));
-            }
-        }
-
-        self.component_units = self
-            .component_units
-            .into_iter()
-            .filter(|(_, power)| *power != 0)
-            .collect();
-
-        self.component_units.append(&mut new_units);
-        CompositeUnit {
-            component_units: self.component_units,
-            _length_marker: PhantomData,
-            _mass_marker: PhantomData,
-            _time_marker: PhantomData,
-            _current_marker: PhantomData,
-            _temperature_marker: PhantomData,
-            _amount_marker: PhantomData,
-            _luminosity_marker: PhantomData,
-        }
-    }
-}
-
-impl<
-        L1: Integer + Add<L2>,
-        M1: Integer + Add<M2>,
-        T1: Integer + Add<T2>,
-        C1: Integer + Add<C2>,
-        Te1: Integer + Add<Te2>,
-        Am1: Integer + Add<A2>,
-        Lu1: Integer + Add<Lu2>,
-        L2: Integer,
-        M2: Integer,
-        T2: Integer,
-        C2: Integer,
-        Te2: Integer,
-        A2: Integer,
-        Lu2: Integer,
-    > Mul<SingleUnit<L1, M1, T1, C1, Te1, Am1, Lu1>> for CompositeUnit<L2, M2, T2, C2, Te2, A2, Lu2>
-where
-    Sum<L1, L2>: Integer,
-    Sum<M1, M2>: Integer,
-    Sum<T1, T2>: Integer,
-    Sum<C1, C2>: Integer,
-    Sum<Te1, Te2>: Integer,
-    Sum<Am1, A2>: Integer,
-    Sum<Lu1, Lu2>: Integer,
-{
-    type Output = CompositeUnit<
-        Sum<L1, L2>,
-        Sum<M1, M2>,
-        Sum<T1, T2>,
-        Sum<C1, C2>,
-        Sum<Te1, Te2>,
-        Sum<Am1, A2>,
-        Sum<Lu1, Lu2>,
-    >;
-
-    fn mul(mut self, rhs: SingleUnit<L1, M1, T1, C1, Te1, Am1, Lu1>) -> Self::Output {
+    fn mul(mut self, rhs: SingleUnit<Kind2>) -> Self::Output {
         let rhs = rhs.into();
         for (i, (unit, power)) in self.component_units.iter_mut().enumerate() {
             if *unit == rhs {
@@ -166,51 +47,58 @@ where
                     *power += 1;
                 }
                 return CompositeUnit {
+                    _kind_marker: PhantomData,
                     component_units: self.component_units,
-                    _length_marker: PhantomData,
-                    _mass_marker: PhantomData,
-                    _time_marker: PhantomData,
-                    _current_marker: PhantomData,
-                    _temperature_marker: PhantomData,
-                    _amount_marker: PhantomData,
-                    _luminosity_marker: PhantomData,
                 };
             }
         }
         self.component_units.push((rhs, 1));
         CompositeUnit {
+            _kind_marker: PhantomData,
             component_units: self.component_units,
-            _length_marker: PhantomData,
-            _mass_marker: PhantomData,
-            _time_marker: PhantomData,
-            _current_marker: PhantomData,
-            _temperature_marker: PhantomData,
-            _amount_marker: PhantomData,
-            _luminosity_marker: PhantomData,
         }
     }
 }
 
-impl<L: Integer, M: Integer, T: Integer, C: Integer, Te: Integer, A: Integer, Lu: Integer>
-    From<SingleUnit<L, M, T, C, Te, A, Lu>> for CompositeUnit<L, M, T, C, Te, A, Lu>
+impl<Kind1: UnitKind, Kind2: UnitKind> Mul<CompositeUnit<Kind2>> for CompositeUnit<Kind1>
+where
+    Kind1: Mul<Kind2>,
+    Prod<Kind1, Kind2>: UnitKind,
 {
-    fn from(other: SingleUnit<L, M, T, C, Te, A, Lu>) -> Self {
+    type Output = CompositeUnit<Prod<Kind1, Kind2>>;
+    fn mul(mut self, rhs: CompositeUnit<Kind2>) -> Self::Output {
+        let mut new_units = Vec::new();
+        for (unit2, power2) in &rhs.component_units {
+            let mut matched_unit = false;
+            for (unit1, power1) in &mut self.component_units {
+                if unit1 == unit2 {
+                    *power1 += *power2;
+                    matched_unit = false;
+                    break;
+                }
+            }
+            if !matched_unit {
+                new_units.push((unit2.clone(), *power2));
+            }
+        }
+        self.component_units.append(&mut new_units);
         CompositeUnit {
-            component_units: vec![(other.into(), 1)],
-            _length_marker: PhantomData,
-            _mass_marker: PhantomData,
-            _time_marker: PhantomData,
-            _current_marker: PhantomData,
-            _temperature_marker: PhantomData,
-            _amount_marker: PhantomData,
-            _luminosity_marker: PhantomData,
+            component_units: self.component_units,
+            _kind_marker: PhantomData,
         }
     }
 }
 
-impl<L: Integer, M: Integer, T: Integer, C: Integer, Te: Integer, A: Integer, Lu: Integer> Display
-    for CompositeUnit<L, M, T, C, Te, A, Lu>
-{
+impl<Kind: UnitKind> From<SingleUnit<Kind>> for CompositeUnit<Kind> {
+    fn from(other: SingleUnit<Kind>) -> Self {
+        CompositeUnit {
+            _kind_marker: PhantomData,
+            component_units: vec![(other.into(), 1)],
+        }
+    }
+}
+
+impl<Kind: UnitKind> Display for CompositeUnit<Kind> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for (i, (unit, power)) in self.component_units.iter().enumerate() {
             match (i, power) {
@@ -225,80 +113,21 @@ impl<L: Integer, M: Integer, T: Integer, C: Integer, Te: Integer, A: Integer, Lu
     }
 }
 
-pub trait Pow<Power: Integer> {
-    type Output;
-}
-
 #[derive(PartialEq)]
-pub struct SingleUnit<Length, Mass, Time, Current, Temperature, Amount, Luminosity>
-where
-    Length: Integer,
-    Mass: Integer,
-    Current: Integer,
-    Temperature: Integer,
-    Amount: Integer,
-    Luminosity: Integer,
-{
-    system: UnitSystem,
+pub struct SingleUnit<Kind: UnitKind> {
+    _kind_marker: PhantomData<Kind>,
     scale: f32,
     abbreviation: &'static str,
     name: &'static str,
-    _length_marker: PhantomData<Length>,
-    _mass_marker: PhantomData<Mass>,
-    _time_marker: PhantomData<Time>,
-    _current_marker: PhantomData<Current>,
-    _temperature_marker: PhantomData<Temperature>,
-    _amount_marker: PhantomData<Amount>,
-    _luminosity_marker: PhantomData<Luminosity>,
 }
 
-impl<L: Integer, M: Integer, T: Integer, C: Integer, Te: Integer, Am: Integer, Lu: Integer>
-    std::fmt::Debug for SingleUnit<L, M, T, C, Te, Am, Lu>
-{
+impl<Kind: UnitKind> std::fmt::Debug for SingleUnit<Kind> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.abbreviation)
     }
 }
 
-impl<
-        L: Integer + Mul<Power>,
-        M: Integer + Mul<Power>,
-        T: Integer + Mul<Power>,
-        C: Integer + Mul<Power>,
-        Te: Integer + Mul<Power>,
-        A: Integer + Mul<Power>,
-        Lu: Integer + Mul<Power>,
-        Power: Integer,
-    > Pow<Power> for SingleUnit<L, M, T, C, Te, A, Lu>
-where
-    Prod<L, Power>: Integer,
-    Prod<M, Power>: Integer,
-    Prod<T, Power>: Integer,
-    Prod<C, Power>: Integer,
-    Prod<Te, Power>: Integer,
-    Prod<A, Power>: Integer,
-    Prod<Lu, Power>: Integer,
-{
-    type Output = SingleUnit<
-        Prod<L, Power>,
-        Prod<M, Power>,
-        Prod<T, Power>,
-        Prod<C, Power>,
-        Prod<Te, Power>,
-        Prod<A, Power>,
-        Prod<Lu, Power>,
-    >;
-}
-
-impl<L, M, T, C, Te, A, Lu> SingleUnit<L, M, T, C, Te, A, Lu>
-where
-    L: Integer,
-    M: Integer,
-    C: Integer,
-    Te: Integer,
-    A: Integer,
-    Lu: Integer,
-{
+impl<Kind: UnitKind> SingleUnit<Kind> {
     pub fn abbreviation(&self) -> &'static str {
         self.abbreviation
     }
@@ -308,162 +137,79 @@ where
     }
 }
 
-impl<
-        L1: Integer + Add<L2>,
-        M1: Integer + Add<M2>,
-        T1: Integer + Add<T2>,
-        C1: Integer + Add<C2>,
-        Te1: Integer + Add<Te2>,
-        A1: Integer + Add<A2>,
-        Lu1: Integer + Add<Lu2>,
-        L2: Integer,
-        M2: Integer,
-        T2: Integer,
-        C2: Integer,
-        Te2: Integer,
-        A2: Integer,
-        Lu2: Integer,
-    > Mul<SingleUnit<L1, M1, T1, C1, Te1, A1, Lu1>> for SingleUnit<L2, M2, T2, C2, Te2, A2, Lu2>
+impl<Kind1: UnitKind, Kind2: UnitKind> Mul<SingleUnit<Kind2>> for SingleUnit<Kind1>
 where
-    Sum<L1, L2>: Integer,
-    Sum<M1, M2>: Integer,
-    Sum<T1, T2>: Integer,
-    Sum<C1, C2>: Integer,
-    Sum<Te1, Te2>: Integer,
-    Sum<A1, A2>: Integer,
-    Sum<Lu1, Lu2>: Integer,
+    Kind1: Mul<Kind2>,
+    Prod<Kind1, Kind2>: UnitKind,
 {
-    type Output = CompositeUnit<
-        Sum<L1, L2>,
-        Sum<M1, M2>,
-        Sum<T1, T2>,
-        Sum<C1, C2>,
-        Sum<Te1, Te2>,
-        Sum<A1, A2>,
-        Sum<Lu1, Lu2>,
-    >;
+    type Output = CompositeUnit<Prod<Kind1, Kind2>>;
 
-    fn mul(self, rhs: SingleUnit<L1, M1, T1, C1, Te1, A1, Lu1>) -> Self::Output {
+    fn mul(self, rhs: SingleUnit<Kind2>) -> Self::Output {
         CompositeUnit {
+            _kind_marker: PhantomData,
             component_units: vec![(self.into(), 1), (rhs.into(), 1)],
-            _length_marker: PhantomData,
-            _mass_marker: PhantomData,
-            _time_marker: PhantomData,
-            _current_marker: PhantomData,
-            _temperature_marker: PhantomData,
-            _amount_marker: PhantomData,
-            _luminosity_marker: PhantomData,
         }
     }
 }
 
-impl<
-        L1: Integer,
-        M1: Integer,
-        T1: Integer,
-        C1: Integer,
-        Te1: Integer,
-        A1: Integer,
-        Lu1: Integer,
-        L2: Integer + Add<L1>,
-        M2: Integer + Add<M1>,
-        T2: Integer + Add<T1>,
-        C2: Integer + Add<C1>,
-        Te2: Integer + Add<Te1>,
-        A2: Integer + Add<A1>,
-        Lu2: Integer + Add<Lu1>,
-    > Mul<CompositeUnit<L1, M1, T1, C1, Te1, A1, Lu1>> for SingleUnit<L2, M2, T2, C2, Te2, A2, Lu2>
+impl<Kind1: UnitKind, Kind2: UnitKind> Mul<CompositeUnit<Kind2>> for SingleUnit<Kind1>
 where
-    Sum<L2, L1>: Integer,
-    Sum<M2, M1>: Integer,
-    Sum<T2, T1>: Integer,
-    Sum<C2, C1>: Integer,
-    Sum<Te2, Te1>: Integer,
-    Sum<A2, A1>: Integer,
-    Sum<Lu2, Lu1>: Integer,
+    Kind2: Mul<Kind1>,
+    Prod<Kind2, Kind1>: UnitKind,
 {
-    type Output = CompositeUnit<
-        Sum<L2, L1>,
-        Sum<M2, M1>,
-        Sum<T2, T1>,
-        Sum<C2, C1>,
-        Sum<Te2, Te1>,
-        Sum<A2, A1>,
-        Sum<Lu2, Lu1>,
-    >;
+    type Output = CompositeUnit<Prod<Kind2, Kind1>>;
 
-    fn mul(self, rhs: CompositeUnit<L1, M1, T1, C1, Te1, A1, Lu1>) -> Self::Output {
+    fn mul(self, rhs: CompositeUnit<Kind2>) -> Self::Output {
         rhs * self
     }
 }
 
-impl<L: Integer, M: Integer, T: Integer, C: Integer, Te: Integer, A: Integer, Lu: Integer> Div
-    for SingleUnit<L, M, T, C, Te, A, Lu>
+impl<Kind1: UnitKind, Kind2: UnitKind> Div<SingleUnit<Kind2>> for SingleUnit<Kind1>
+where
+    Kind1: Div<Kind2>,
+    Quot<Kind1, Kind2>: UnitKind,
 {
-    type Output = CompositeUnit<L, M, T, C, Te, A, Lu>;
+    type Output = CompositeUnit<Quot<Kind1, Kind2>>;
 
-    fn div(self, rhs: Self) -> Self::Output {
+    fn div(self, rhs: SingleUnit<Kind2>) -> Self::Output {
         CompositeUnit {
+            _kind_marker: PhantomData,
             component_units: vec![(self.into(), 1), (rhs.into(), -1)],
-            _length_marker: PhantomData,
-            _mass_marker: PhantomData,
-            _time_marker: PhantomData,
-            _current_marker: PhantomData,
-            _temperature_marker: PhantomData,
-            _amount_marker: PhantomData,
-            _luminosity_marker: PhantomData,
         }
     }
 }
 
-impl<L: Integer, M: Integer, T: Integer, C: Integer, Te: Integer, A: Integer, Lu: Integer> Mul<f32>
-    for SingleUnit<L, M, T, C, Te, A, Lu>
-{
-    type Output = SingleQuantity<L, M, T, C, Te, A, Lu>;
+impl<Kind: UnitKind> Mul<f32> for SingleUnit<Kind> {
+    type Output = SingleQuantity<Kind>;
 
     fn mul(self, rhs: f32) -> Self::Output {
         SingleQuantity::new(self.into(), rhs)
     }
 }
 
-impl<L: Integer, M: Integer, T: Integer, C: Integer, Te: Integer, A: Integer, Lu: Integer>
-    Mul<SingleUnit<L, M, T, C, Te, A, Lu>> for f32
-{
-    type Output = SingleQuantity<L, M, T, C, Te, A, Lu>;
+impl<Kind: UnitKind> Mul<SingleUnit<Kind>> for f32 {
+    type Output = SingleQuantity<Kind>;
 
-    fn mul(self, rhs: SingleUnit<L, M, T, C, Te, A, Lu>) -> Self::Output {
+    fn mul(self, rhs: SingleUnit<Kind>) -> Self::Output {
         SingleQuantity::new(rhs.into(), self)
     }
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub struct DynKind;
+
+#[derive(Debug, Clone, PartialEq)]
 struct DynUnit {
-    length: i8,
-    mass: i8,
-    time: i8,
-    current: i8,
-    temperature: i8,
-    amount: i8,
-    luminosity: i8,
-    system: UnitSystem,
+    kind: DynKind,
     scale: f32,
     abbreviation: &'static str,
     name: &'static str,
 }
 
-impl<L: Integer, M: Integer, T: Integer, C: Integer, Te: Integer, A: Integer, Lu: Integer>
-    From<SingleUnit<L, M, T, C, Te, A, Lu>> for DynUnit
-{
-    fn from(other: SingleUnit<L, M, T, C, Te, A, Lu>) -> Self {
+impl<Kind: UnitKind> From<SingleUnit<Kind>> for DynUnit {
+    fn from(other: SingleUnit<Kind>) -> Self {
         Self {
-            length: L::to_i8(),
-            mass: M::to_i8(),
-            time: T::to_i8(),
-            current: C::to_i8(),
-            temperature: Te::to_i8(),
-            amount: A::to_i8(),
-            luminosity: Lu::to_i8(),
-            system: other.system,
+            kind: Kind::to_kind(),
             scale: other.scale,
             abbreviation: other.abbreviation,
             name: other.name,
@@ -472,182 +218,16 @@ impl<L: Integer, M: Integer, T: Integer, C: Integer, Te: Integer, A: Integer, Lu
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct UnitSystem {
-    length: BaseUnit<Length>,
-    mass: BaseUnit<Mass>,
-    time: BaseUnit<Time>,
-    current: BaseUnit<Current>,
-    temperature: BaseUnit<Temperature>,
-    amount: BaseUnit<Amount>,
-    luminosity: BaseUnit<Luminosity>,
-}
-
-macro_rules! unit_kinds {
-    ($($units:ident),*) => {
-        $(
-            #[derive(Debug, Clone, PartialEq)]
-            pub struct $units;
-            impl UnitKind for $units {}
-        )*
-    };
-}
-
-unit_kinds!(Length, Mass, Time, Current, Temperature, Amount, Luminosity);
-
-#[derive(Debug, Clone, PartialEq)]
 pub struct BaseUnit<Kind: UnitKind> {
     scale_from_si: f32,
     _marker: PhantomData<Kind>,
 }
 
-pub trait UnitKind {}
-
-const fn define_base_unit<Kind: UnitKind>(scale: f32) -> BaseUnit<Kind> {
-    BaseUnit {
-        scale_from_si: scale,
-        _marker: PhantomData,
-    }
-}
-
-const fn define_base_si_unit<Kind: UnitKind>() -> BaseUnit<Kind> {
-    define_base_unit(1.)
+pub trait UnitKind {
+    fn to_kind() -> DynKind;
 }
 
 trait UnitFmt {
     fn abbrevation() -> &'static str;
     fn name() -> &'static str;
-}
-
-#[allow(non_upper_case_globals)]
-pub mod si {
-    use super::*;
-    use typenum::{N1, N2};
-
-    const METER: BaseUnit<Length> = define_base_si_unit();
-    const KILOGRAM: BaseUnit<Mass> = define_base_si_unit();
-    const SECOND: BaseUnit<Time> = define_base_si_unit();
-    const AMPERE: BaseUnit<Current> = define_base_si_unit();
-    const KELVIN: BaseUnit<Temperature> = define_base_si_unit();
-    const MOLE: BaseUnit<Amount> = define_base_si_unit();
-    const CANDELA: BaseUnit<Luminosity> = define_base_si_unit();
-
-    const SI: UnitSystem = UnitSystem {
-        length: METER,
-        mass: KILOGRAM,
-        time: SECOND,
-        current: AMPERE,
-        temperature: KELVIN,
-        amount: MOLE,
-        luminosity: CANDELA,
-    };
-
-    macro_rules! kind_to_type {
-        (length) => {
-            SingleUnit<P1, Z0, Z0, Z0, Z0, Z0, Z0>
-        };
-        (mass) => {
-            SingleUnit<Z0, P1, Z0, Z0, Z0, Z0, Z0>
-        };
-        (time) => {
-            SingleUnit<Z0, Z0, P1, Z0, Z0, Z0, Z0>
-        };
-        (current) => {
-            SingleUnit<Z0, Z0, Z0, P1, Z0, Z0, Z0>
-        };
-        (temperature) => {
-            SingleUnit<Z0, Z0, Z0, Z0, P1, Z0, Z0>
-        };
-        (amount) => {
-            SingleUnit<Z0, Z0, Z0, Z0, Z0, P1, Z0>
-        };
-        (luminosity) => {
-            SingleUnit<Z0, Z0, Z0, Z0, Z0, Z0, P1>
-        };
-    }
-
-    macro_rules! create_fundamental_unit {
-        ($name:ident, $abbreviation:literal, $unit_name:literal, $kind:ident) => {
-            #[allow(unused_macros)]
-            macro_rules! $name {
-                () => {
-                    kind_to_type!($kind)
-                };
-            }
-            pub const $name: kind_to_type!($kind) = SingleUnit {
-                system: SI,
-                scale: 1.,
-                abbreviation: $abbreviation,
-                name: $unit_name,
-                _length_marker: PhantomData,
-                _mass_marker: PhantomData,
-                _time_marker: PhantomData,
-                _current_marker: PhantomData,
-                _temperature_marker: PhantomData,
-                _amount_marker: PhantomData,
-                _luminosity_marker: PhantomData,
-            };
-        };
-    }
-
-    create_fundamental_unit!(m, "m", "meter", length);
-    create_fundamental_unit!(kg, "kg", "kilogram", mass);
-    create_fundamental_unit!(s, "s", "second", time);
-    create_fundamental_unit!(A, "A", "Ampere", current);
-    create_fundamental_unit!(K, "K", "Kelvin", temperature);
-    create_fundamental_unit!(mol, "mol", "mole", amount);
-    create_fundamental_unit!(cd, "cd", "candela", luminosity);
-
-    macro_rules! combine_units_inner {
-        ($unit:ident, $power:ty) => {
-            <$unit!() as Pow<$power>>::Output
-        };
-        ($unit1:ident, $power1:ty, $($unit2:ident, $power2:ty),*) => {
-            <combine_units!($unit1, $power1) as Mul<combine_units!($($unit2, $power2),*)>>::Output
-        };
-    }
-
-    macro_rules! combine_units {
-        ($unit:ident, $power:ty) => {
-            <$unit!() as Pow<$power>>::Output
-        };
-        ($($unit2:ident, $power2:ty),*) => {
-            <combine_units_inner!($($unit2, $power2),*) as ToSingle>::Single
-        };
-    }
-
-    macro_rules! create_derived_unit {
-        ($name:ident, $abbreviation:literal, $unit_name:literal $(, $unit:ident, $power:ty)*) => {
-            #[allow(unused_macros)]
-            macro_rules! $name {
-                () => {combine_units!($($unit, $power),*)};
-            }
-            pub const $name: combine_units!($($unit, $power),*) = SingleUnit {
-                system: SI,
-                scale: 1.,
-                abbreviation: $abbreviation,
-                name: $unit_name,
-                _length_marker: PhantomData,
-                _mass_marker: PhantomData,
-                _time_marker: PhantomData,
-                _current_marker: PhantomData,
-                _temperature_marker: PhantomData,
-                _amount_marker: PhantomData,
-                _luminosity_marker: PhantomData,
-            };
-        };
-    }
-
-    create_derived_unit!(N, "N", "Newton", kg, P1, m, P1, s, N2);
-    create_derived_unit!(J, "J", "Joule", N, P1, m, P1);
-    create_derived_unit!(W, "W", "Watt", J, P1, s, N1);
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn unit_equality() {
-        assert_eq!(si::m, si::m);
-    }
 }

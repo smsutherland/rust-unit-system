@@ -1,31 +1,20 @@
-use crate::unit::{CompositeUnit, SingleUnit};
+use crate::unit::{CompositeUnit, SingleUnit, UnitKind};
 use std::fmt::Display;
-use std::ops::{Add, Mul};
-use typenum::{Integer, Sum};
+use std::ops::Mul;
+use typenum::Prod;
 
 #[derive(Debug, Clone)]
-pub struct SingleQuantity<Length, Mass, Time, Current, Temperature, Amount, Luminosity>
-where
-    Length: Integer,
-    Mass: Integer,
-    Time: Integer,
-    Current: Integer,
-    Temperature: Integer,
-    Amount: Integer,
-    Luminosity: Integer,
-{
-    unit: CompositeUnit<Length, Mass, Time, Current, Temperature, Amount, Luminosity>,
+pub struct SingleQuantity<Kind: UnitKind> {
+    unit: CompositeUnit<Kind>,
     scalar: f32,
 }
 
-impl<L: Integer, M: Integer, T: Integer, C: Integer, Te: Integer, A: Integer, Lu: Integer>
-    SingleQuantity<L, M, T, C, Te, A, Lu>
-{
-    pub fn new(unit: CompositeUnit<L, M, T, C, Te, A, Lu>, scalar: f32) -> Self {
+impl<Kind: UnitKind> SingleQuantity<Kind> {
+    pub fn new(unit: CompositeUnit<Kind>, scalar: f32) -> Self {
         Self { unit, scalar }
     }
 
-    pub fn to(&self, unit: impl Into<CompositeUnit<L, M, T, C, Te, A, Lu>>) -> Self {
+    pub fn to(&self, unit: impl Into<CompositeUnit<Kind>>) -> Self {
         let unit = unit.into();
         let source_scale = self.unit.scale_factor();
         let target_scale = unit.scale_factor();
@@ -36,83 +25,26 @@ impl<L: Integer, M: Integer, T: Integer, C: Integer, Te: Integer, A: Integer, Lu
     }
 }
 
-impl<
-        L1: Integer + Add<L2>,
-        M1: Integer + Add<M2>,
-        T1: Integer + Add<T2>,
-        C1: Integer + Add<C2>,
-        Te1: Integer + Add<Te2>,
-        A1: Integer + Add<A2>,
-        Lu1: Integer + Add<Lu2>,
-        L2: Integer,
-        M2: Integer,
-        T2: Integer,
-        C2: Integer,
-        Te2: Integer,
-        A2: Integer,
-        Lu2: Integer,
-    > Mul<SingleQuantity<L1, M1, T1, C1, Te1, A1, Lu1>>
-    for SingleQuantity<L2, M2, T2, C2, Te2, A2, Lu2>
+impl<Kind1: UnitKind, Kind2: UnitKind> Mul<SingleQuantity<Kind2>> for SingleQuantity<Kind1>
 where
-    Sum<L1, L2>: Integer,
-    Sum<M1, M2>: Integer,
-    Sum<T1, T2>: Integer,
-    Sum<C1, C2>: Integer,
-    Sum<Te1, Te2>: Integer,
-    Sum<A1, A2>: Integer,
-    Sum<Lu1, Lu2>: Integer,
+    Kind1: Mul<Kind2>,
+    Prod<Kind1, Kind2>: UnitKind,
 {
-    type Output = SingleQuantity<
-        Sum<L1, L2>,
-        Sum<M1, M2>,
-        Sum<T1, T2>,
-        Sum<C1, C2>,
-        Sum<Te1, Te2>,
-        Sum<A1, A2>,
-        Sum<Lu1, Lu2>,
-    >;
+    type Output = SingleQuantity<Prod<Kind1, Kind2>>;
 
-    fn mul(self, rhs: SingleQuantity<L1, M1, T1, C1, Te1, A1, Lu1>) -> Self::Output {
+    fn mul(self, rhs: SingleQuantity<Kind2>) -> Self::Output {
         Self::Output::new(self.unit * rhs.unit, self.scalar * rhs.scalar)
     }
 }
 
-impl<
-        L1: Integer + Add<L2>,
-        M1: Integer + Add<M2>,
-        T1: Integer + Add<T2>,
-        C1: Integer + Add<C2>,
-        Te1: Integer + Add<Te2>,
-        A1: Integer + Add<A2>,
-        Lu1: Integer + Add<Lu2>,
-        L2: Integer,
-        M2: Integer,
-        T2: Integer,
-        C2: Integer,
-        Te2: Integer,
-        A2: Integer,
-        Lu2: Integer,
-    > Mul<SingleUnit<L1, M1, T1, C1, Te1, A1, Lu1>> for SingleQuantity<L2, M2, T2, C2, Te2, A2, Lu2>
+impl<Kind1: UnitKind, Kind2: UnitKind> Mul<SingleUnit<Kind2>> for SingleQuantity<Kind1>
 where
-    Sum<L1, L2>: Integer,
-    Sum<M1, M2>: Integer,
-    Sum<T1, T2>: Integer,
-    Sum<C1, C2>: Integer,
-    Sum<Te1, Te2>: Integer,
-    Sum<A1, A2>: Integer,
-    Sum<Lu1, Lu2>: Integer,
+    Kind1: Mul<Kind2>,
+    Prod<Kind1, Kind2>: UnitKind,
 {
-    type Output = SingleQuantity<
-        Sum<L1, L2>,
-        Sum<M1, M2>,
-        Sum<T1, T2>,
-        Sum<C1, C2>,
-        Sum<Te1, Te2>,
-        Sum<A1, A2>,
-        Sum<Lu1, Lu2>,
-    >;
+    type Output = SingleQuantity<Prod<Kind1, Kind2>>;
 
-    fn mul(self, rhs: SingleUnit<L1, M1, T1, C1, Te1, A1, Lu1>) -> Self::Output {
+    fn mul(self, rhs: SingleUnit<Kind2>) -> Self::Output {
         Self::Output {
             unit: self.unit * rhs,
             scalar: self.scalar,
@@ -120,9 +52,7 @@ where
     }
 }
 
-impl<L: Integer, M: Integer, T: Integer, C: Integer, Te: Integer, A: Integer, Lu: Integer> Display
-    for SingleQuantity<L, M, T, C, Te, A, Lu>
-{
+impl<Kind: UnitKind> Display for SingleQuantity<Kind> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{} {}", self.scalar, self.unit)
     }
