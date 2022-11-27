@@ -18,7 +18,7 @@ struct DynUnit {
 impl<Kind: UnitKind> From<SingleUnit<Kind>> for DynUnit {
     fn from(other: SingleUnit<Kind>) -> Self {
         Self {
-            kind: Kind::to_kind(),
+            kind: Kind::to_dynkind(),
             scale: other.scale,
             abbreviation: other.abbreviation,
             name: other.name,
@@ -33,7 +33,7 @@ pub struct BaseUnit<Kind: UnitKind> {
 }
 
 pub trait UnitKind {
-    fn to_kind() -> DynKind;
+    fn to_dynkind() -> DynKind;
 }
 
 trait UnitFmt {
