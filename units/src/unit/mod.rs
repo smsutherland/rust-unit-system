@@ -2,6 +2,8 @@ mod composite;
 pub use composite::CompositeUnit;
 mod single;
 pub use single::SingleUnit;
+use std::ops::{Div, Mul};
+use typenum::{Prod, Quot};
 
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct DynKind {
@@ -42,12 +44,64 @@ trait UnitFmt {
     fn name() -> &'static str;
 }
 
-struct Length;
-impl UnitKind for Length {
-    fn to_dynkind() -> DynKind {
-        DynKind {
-            length: 1,
-            ..DynKind::default()
+macro_rules! define_base_unit {
+    ($name:ident, $kind:ident, $compunit:ident) => {
+        pub struct $name;
+
+        impl $name {
+            fn to_comp() -> composite::$compunit {
+                composite::$compunit::default()
+            }
         }
-    }
+
+        impl<Kind: UnitKind> Mul<Kind> for $name
+        where
+            composite::$compunit: Mul<Kind>,
+        {
+            type Output = Prod<composite::$compunit, Kind>;
+            fn mul(self, rhs: Kind) -> Self::Output {
+                Self::to_comp() * rhs
+            }
+        }
+
+        impl<Kind: UnitKind> Div<Kind> for $name
+        where
+            composite::$compunit: Div<Kind>,
+        {
+            type Output = Quot<composite::$compunit, Kind>;
+            fn div(self, rhs: Kind) -> Self::Output {
+                Self::to_comp() / rhs
+            }
+        }
+
+        impl UnitKind for $name {
+            fn to_dynkind() -> DynKind {
+                DynKind {
+                    $kind: 1,
+                    ..DynKind::default()
+                }
+            }
+        }
+
+        impl composite::IntoComp for $name {
+            type Output = composite::$compunit;
+
+            fn into(self) -> composite::$compunit {
+                Default::default()
+            }
+        }
+    };
+}
+
+define_base_unit!(Length, length, CompLength);
+define_base_unit!(Mass, mass, CompMass);
+define_base_unit!(Time, time, CompTime);
+define_base_unit!(Current, current, CompCurrent);
+define_base_unit!(Temperature, temperature, CompTemperature);
+define_base_unit!(Amount, amount, CompAmount);
+define_base_unit!(Luminosity, luminosiy, CompLuminosity);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
 }

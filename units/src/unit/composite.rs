@@ -3,7 +3,7 @@ use super::{single::ToSingle, DynUnit, SingleUnit, UnitKind};
 use std::fmt::Display;
 use std::marker::PhantomData;
 use std::ops::{Add, Div, Mul, Sub};
-use typenum::{Diff, Integer, Prod, Quot, Sum};
+use typenum::{Diff, Integer, Prod, Quot, Sum, P1, Z0};
 
 #[derive(Debug, Clone)]
 pub struct CompositeUnit<Kind: UnitKind> {
@@ -177,7 +177,7 @@ impl<Kind: UnitKind> Display for CompositeUnit<Kind> {
 }
 
 #[derive(Debug)]
-struct CompositeUnitKind<Length, Mass, Time, Current, Temperature, Amount, Luminosity> {
+pub struct CompositeUnitKind<Length, Mass, Time, Current, Temperature, Amount, Luminosity> {
     _length_marker: PhantomData<Length>,
     _mass_marker: PhantomData<Mass>,
     _time_marker: PhantomData<Time>,
@@ -244,6 +244,33 @@ where
     }
 }
 
+impl<L1, M1, T1, C1, Te1, A1, Lu1, L2, M2, T2, C2, Te2, A2, Lu2, Kind2> Mul<Kind2>
+    for CompositeUnitKind<L1, M1, T1, C1, Te1, A1, Lu1>
+where
+    L1: Add<L2>,
+    M1: Add<M2>,
+    T1: Add<T2>,
+    C1: Add<C2>,
+    Te1: Add<Te2>,
+    A1: Add<A2>,
+    Lu1: Add<Lu2>,
+    Kind2: IntoComp<Output = CompositeUnitKind<L2, M2, T2, C2, Te2, A2, Lu2>>,
+{
+    type Output = CompositeUnitKind<
+        Sum<L1, L2>,
+        Sum<M1, M2>,
+        Sum<T1, T2>,
+        Sum<C1, C2>,
+        Sum<Te1, Te2>,
+        Sum<A1, A2>,
+        Sum<Lu1, Lu2>,
+    >;
+
+    fn mul(self, _: Kind2) -> Self::Output {
+        Self::Output::default()
+    }
+}
+
 impl<L1, M1, T1, C1, Te1, A1, Lu1, L2, M2, T2, C2, Te2, A2, Lu2>
     Div<CompositeUnitKind<L2, M2, T2, C2, Te2, A2, Lu2>>
     for CompositeUnitKind<L1, M1, T1, C1, Te1, A1, Lu1>
@@ -269,4 +296,45 @@ where
     fn div(self, _: CompositeUnitKind<L2, M2, T2, C2, Te2, A2, Lu2>) -> Self::Output {
         Self::Output::default()
     }
+}
+
+impl<L1, M1, T1, C1, Te1, A1, Lu1, L2, M2, T2, C2, Te2, A2, Lu2, Kind2> Div<Kind2>
+    for CompositeUnitKind<L1, M1, T1, C1, Te1, A1, Lu1>
+where
+    L1: Sub<L2>,
+    M1: Sub<M2>,
+    T1: Sub<T2>,
+    C1: Sub<C2>,
+    Te1: Sub<Te2>,
+    A1: Sub<A2>,
+    Lu1: Sub<Lu2>,
+    Kind2: IntoComp<Output = CompositeUnitKind<L2, M2, T2, C2, Te2, A2, Lu2>>,
+{
+    type Output = CompositeUnitKind<
+        Diff<L1, L2>,
+        Diff<M1, M2>,
+        Diff<T1, T2>,
+        Diff<C1, C2>,
+        Diff<Te1, Te2>,
+        Diff<A1, A2>,
+        Diff<Lu1, Lu2>,
+    >;
+
+    fn div(self, _: Kind2) -> Self::Output {
+        Self::Output::default()
+    }
+}
+
+pub type CompLength = CompositeUnitKind<P1, Z0, Z0, Z0, Z0, Z0, Z0>;
+pub type CompMass = CompositeUnitKind<Z0, P1, Z0, Z0, Z0, Z0, Z0>;
+pub type CompTime = CompositeUnitKind<Z0, Z0, P1, Z0, Z0, Z0, Z0>;
+pub type CompCurrent = CompositeUnitKind<Z0, Z0, Z0, P1, Z0, Z0, Z0>;
+pub type CompTemperature = CompositeUnitKind<Z0, Z0, Z0, Z0, P1, Z0, Z0>;
+pub type CompAmount = CompositeUnitKind<Z0, Z0, Z0, Z0, Z0, P1, Z0>;
+pub type CompLuminosity = CompositeUnitKind<Z0, Z0, Z0, Z0, Z0, Z0, P1>;
+
+pub trait IntoComp: Sized {
+    type Output;
+
+    fn into(self) -> Self::Output;
 }

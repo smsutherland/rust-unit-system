@@ -83,3 +83,34 @@ impl<Kind: UnitKind> Mul<SingleUnit<Kind>> for f32 {
         SingleQuantity::new(rhs.into(), self)
     }
 }
+
+#[allow(non_upper_case_globals)]
+pub const m: SingleUnit<super::Length> = SingleUnit {
+    _kind_marker: PhantomData,
+    scale: 1.,
+    abbreviation: "m",
+    name: "meter",
+};
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn make_m2() {
+        let m2 = m * m;
+        println!("{:?}", m2);
+    }
+    
+    #[test]
+    fn make_m3() {
+        let m2 = m * m;
+        let m3 = m2 * m;
+        println!("{}", m3);
+
+
+        let m2 = m * m;
+        let m3 = m * m2;
+        println!("{}", m3);
+    }
+}
