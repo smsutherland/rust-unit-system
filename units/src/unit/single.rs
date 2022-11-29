@@ -96,13 +96,35 @@ impl<Kind: UnitKind> Mul<SingleUnit<Kind>> for f32 {
     }
 }
 
-#[allow(non_upper_case_globals)]
-pub const m: SingleUnit<super::Length> = SingleUnit {
-    _kind_marker: PhantomData,
-    scale: 1.,
-    abbreviation: "m",
-    name: "meter",
-};
+macro_rules! make_base_unit {
+    ($name:ident, $longname:ident, $kind:ident) => {
+        #[allow(non_upper_case_globals)]
+        pub const $name: SingleUnit<super::$kind> = SingleUnit {
+            _kind_marker: PhantomData,
+            scale: 1.,
+            abbreviation: stringify!($name),
+            name: stringify!($longname),
+        };
+    };
+
+    ($name:ident, $longname:literal, $kind:ident) => {
+        #[allow(non_upper_case_globals)]
+        pub const $name: SingleUnit<super::$kind> = SingleUnit {
+            _kind_marker: PhantomData,
+            scale: 1.,
+            abbreviation: stringify!($name),
+            name: $longname,
+        };
+    };
+}
+
+make_base_unit!(m, meter, Length);
+make_base_unit!(kg, kilogram, Mass);
+make_base_unit!(s, second, Time);
+make_base_unit!(A, ampere, Current);
+make_base_unit!(K, kelvin, Temperature);
+make_base_unit!(mol, mole, Amount);
+make_base_unit!(cd, candela, Luminosity);
 
 #[cfg(test)]
 mod tests {

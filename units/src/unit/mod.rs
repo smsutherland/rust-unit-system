@@ -2,6 +2,7 @@ mod composite;
 pub use composite::CompositeUnit;
 mod single;
 pub use single::SingleUnit;
+pub use single::{cd, kg, m, mol, s, A, K};
 use std::ops::{Div, Mul};
 use typenum::{Prod, Quot};
 
