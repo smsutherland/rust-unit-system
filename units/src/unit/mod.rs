@@ -6,7 +6,7 @@ pub use single::{cd, kg, m, mol, s, A, K};
 use std::ops::{Div, Mul};
 use typenum::{Prod, Quot};
 
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct DynKind {
     length: i8,
     mass: i8,
@@ -17,7 +17,7 @@ pub struct DynKind {
     luminosiy: i8,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 struct DynUnit {
     kind: DynKind,
     scale: f32,

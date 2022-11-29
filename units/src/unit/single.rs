@@ -1,4 +1,4 @@
-use super::{CompositeUnit, DynUnit, UnitKind};
+use super::{CompositeUnit, UnitKind};
 use crate::quantity::SingleQuantity;
 use std::marker::PhantomData;
 use std::ops::{Div, Mul};
@@ -8,7 +8,7 @@ pub(super) trait ToSingle {
     type Single;
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone, Copy)]
 pub struct SingleUnit<Kind: UnitKind> {
     _kind_marker: PhantomData<Kind>,
     pub(super) scale: f32,
