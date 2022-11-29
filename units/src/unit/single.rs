@@ -1,4 +1,4 @@
-use super::{CompositeUnit, UnitKind};
+use super::{CompositeUnit, DynUnit, UnitKind};
 use crate::quantity::SingleQuantity;
 use std::marker::PhantomData;
 use std::ops::{Div, Mul};
@@ -40,7 +40,13 @@ where
     type Output = CompositeUnit<Prod<Kind1, Kind2>>;
 
     fn mul(self, rhs: SingleUnit<Kind2>) -> Self::Output {
-        CompositeUnit::new(vec![(self.into(), 1), (rhs.into(), 1)])
+        let rhs = rhs.into();
+        let dyn_self = self.into();
+        if dyn_self == rhs {
+            CompositeUnit::new(vec![(dyn_self, 2)])
+        } else {
+            CompositeUnit::new(vec![(dyn_self, 1), (rhs, 1)])
+        }
     }
 }
 
@@ -64,7 +70,13 @@ where
     type Output = CompositeUnit<Quot<Kind1, Kind2>>;
 
     fn div(self, rhs: SingleUnit<Kind2>) -> Self::Output {
-        CompositeUnit::new(vec![(self.into(), 1), (rhs.into(), -1)])
+        let rhs = rhs.into();
+        let dyn_self = self.into();
+        if dyn_self == rhs {
+            CompositeUnit::new(Vec::new())
+        } else {
+            CompositeUnit::new(vec![(dyn_self, 1), (rhs, -1)])
+        }
     }
 }
 
@@ -99,15 +111,14 @@ mod tests {
     #[test]
     fn make_m2() {
         let m2 = m * m;
-        println!("{:?}", m2);
+        println!("{}", m2);
     }
-    
+
     #[test]
     fn make_m3() {
         let m2 = m * m;
         let m3 = m2 * m;
         println!("{}", m3);
-
 
         let m2 = m * m;
         let m3 = m * m2;
