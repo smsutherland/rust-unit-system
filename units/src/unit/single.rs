@@ -99,6 +99,7 @@ impl<Kind: UnitKind> Mul<SingleUnit<Kind>> for f32 {
 
 pub type LengthUnit = SingleUnit<LengthKind>;
 
+#[allow(non_upper_case_globals)]
 pub const m: LengthUnit = LengthUnit {
     _kind_marker: PhantomData,
     abbreviation: "m",
@@ -112,6 +113,6 @@ pub mod test {
     #[test]
     fn multiple_meter() {
         let m2 = m * m;
-        println!("{:?}", m2);
+        println!("{}", m2);
     }
 }
