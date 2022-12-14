@@ -1,6 +1,7 @@
 [workspace]
 
 members = [
-  "units"
+  "units",
+  "units-macros"
 ]
 
