@@ -1,3 +1,4 @@
+use super::kind::LengthKind;
 use super::{CompositeUnit, UnitKind};
 use crate::quantity::SingleQuantity;
 use std::marker::PhantomData;
@@ -96,54 +97,21 @@ impl<Kind: UnitKind> Mul<SingleUnit<Kind>> for f32 {
     }
 }
 
-macro_rules! make_base_unit {
-    ($name:ident, $longname:ident, $kind:ident) => {
-        #[allow(non_upper_case_globals)]
-        pub const $name: SingleUnit<super::$kind> = SingleUnit {
-            _kind_marker: PhantomData,
-            scale: 1.,
-            abbreviation: stringify!($name),
-            name: stringify!($longname),
-        };
-    };
+pub type LengthUnit = SingleUnit<LengthKind>;
 
-    ($name:ident, $longname:literal, $kind:ident) => {
-        #[allow(non_upper_case_globals)]
-        pub const $name: SingleUnit<super::$kind> = SingleUnit {
-            _kind_marker: PhantomData,
-            scale: 1.,
-            abbreviation: stringify!($name),
-            name: $longname,
-        };
-    };
-}
-
-make_base_unit!(m, meter, Length);
-make_base_unit!(kg, kilogram, Mass);
-make_base_unit!(s, second, Time);
-make_base_unit!(A, ampere, Current);
-make_base_unit!(K, kelvin, Temperature);
-make_base_unit!(mol, mole, Amount);
-make_base_unit!(cd, candela, Luminosity);
+pub const m: LengthUnit = LengthUnit {
+    _kind_marker: PhantomData,
+    abbreviation: "m",
+    name: "meter",
+    scale: 1.,
+};
 
 #[cfg(test)]
-mod tests {
+pub mod test {
     use super::*;
-
     #[test]
-    fn make_m2() {
+    fn multiple_meter() {
         let m2 = m * m;
-        println!("{}", m2);
-    }
-
-    #[test]
-    fn make_m3() {
-        let m2 = m * m;
-        let m3 = m2 * m;
-        println!("{}", m3);
-
-        let m2 = m * m;
-        let m3 = m * m2;
-        println!("{}", m3);
+        println!("{:?}", m2);
     }
 }

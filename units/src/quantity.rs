@@ -1,4 +1,5 @@
-use crate::unit::{CompositeUnit, SingleUnit, UnitKind};
+use crate::unit::kind::UnitKind;
+use crate::unit::{CompositeUnit, SingleUnit};
 use std::fmt::Display;
 use std::ops::Mul;
 use typenum::Prod;
