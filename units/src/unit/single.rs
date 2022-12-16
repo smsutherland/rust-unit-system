@@ -108,8 +108,15 @@ pub const m: LengthUnit = LengthUnit {
     scale: 1.,
 };
 
+pub const N: ForceUnit = ForceUnit {
+    _kind_marker: PhantomData,
+    abbreviation: "N",
+    name: "Newton",
+    scale: 1.,
+};
+
 #[cfg(test)]
-pub mod test {
+mod test {
     use super::*;
     #[test]
     fn multiple_meter() {
