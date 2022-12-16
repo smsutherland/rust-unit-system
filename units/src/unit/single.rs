@@ -1,4 +1,4 @@
-use super::kind::LengthKind;
+use super::kind::*;
 use super::{CompositeUnit, UnitKind};
 use crate::quantity::SingleQuantity;
 use std::marker::PhantomData;
@@ -98,6 +98,7 @@ impl<Kind: UnitKind> Mul<SingleUnit<Kind>> for f32 {
 }
 
 pub type LengthUnit = SingleUnit<LengthKind>;
+pub type ForceUnit = SingleUnit<ForceKind>;
 
 #[allow(non_upper_case_globals)]
 pub const m: LengthUnit = LengthUnit {

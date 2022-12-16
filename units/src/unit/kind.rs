@@ -2,8 +2,8 @@ use std::{
     marker::PhantomData,
     ops::{Add, Div, Mul, Sub},
 };
-
 use typenum::{tarr, Diff, Integer, Sum, P1, Z0};
+use units_macros::type_arith;
 
 use super::composite::IntoComp;
 
@@ -23,6 +23,7 @@ pub trait UnitKind {
 }
 
 pub struct CompositeUnitKind<Length, Mass, Time, Current, Temperature, Amount, Luminosity> {
+    #[allow(clippy::type_complexity)]
     _marker: PhantomData<tarr![Length, Mass, Time, Current, Temperature, Amount, Luminosity]>,
 }
 
@@ -171,3 +172,5 @@ pub type CurrentKind = CompositeUnitKind<Z0, Z0, Z0, P1, Z0, Z0, Z0>;
 pub type TemperatureKind = CompositeUnitKind<Z0, Z0, Z0, Z0, P1, Z0, Z0>;
 pub type AmountKind = CompositeUnitKind<Z0, Z0, Z0, Z0, Z0, P1, Z0>;
 pub type LuminosityKind = CompositeUnitKind<Z0, Z0, Z0, Z0, Z0, Z0, P1>;
+
+pub type ForceKind = type_arith!(LengthKind * MassKind / TimeKind / TimeKind);
