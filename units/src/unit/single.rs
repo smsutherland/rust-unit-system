@@ -21,10 +21,10 @@ pub struct SingleUnit<Kind: UnitKind> {
 impl<Kind: UnitKind> std::fmt::Debug for SingleUnit<Kind> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("SingleUnit")
-        .field("scale", &self.scale)
-        .field("abbreviation", &self.abbreviation)
-        .field("name", &self.name)
-        .finish()
+            .field("scale", &self.scale)
+            .field("abbreviation", &self.abbreviation)
+            .field("name", &self.name)
+            .finish()
     }
 }
 
@@ -112,7 +112,9 @@ pub const m: LengthUnit = LengthUnit {
     name: "meter",
     scale: 1.,
 };
-const km: LengthUnit = create_unit!("km", "kilometer", 1000. * m);
+
+#[allow(non_upper_case_globals)]
+pub const km: LengthUnit = create_unit!("km", "kilometer", 1000. * m);
 
 pub const N: ForceUnit = ForceUnit {
     _kind_marker: PhantomData,
