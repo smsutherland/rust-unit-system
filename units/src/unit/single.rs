@@ -4,6 +4,7 @@ use crate::quantity::SingleQuantity;
 use std::marker::PhantomData;
 use std::ops::{Div, Mul};
 use typenum::{Prod, Quot};
+use units_macros::create_unit;
 
 pub(super) trait ToSingle {
     type Single;
@@ -19,7 +20,11 @@ pub struct SingleUnit<Kind: UnitKind> {
 
 impl<Kind: UnitKind> std::fmt::Debug for SingleUnit<Kind> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.abbreviation)
+        f.debug_struct("SingleUnit")
+        .field("scale", &self.scale)
+        .field("abbreviation", &self.abbreviation)
+        .field("name", &self.name)
+        .finish()
     }
 }
 
@@ -107,6 +112,7 @@ pub const m: LengthUnit = LengthUnit {
     name: "meter",
     scale: 1.,
 };
+const km: LengthUnit = create_unit!("km", "kilometer", 1000. * m);
 
 pub const N: ForceUnit = ForceUnit {
     _kind_marker: PhantomData,
@@ -122,5 +128,10 @@ mod test {
     fn multiple_meter() {
         let m2 = m * m;
         println!("{}", m2);
+    }
+
+    #[test]
+    fn use_km() {
+        println!("{:?}", km);
     }
 }

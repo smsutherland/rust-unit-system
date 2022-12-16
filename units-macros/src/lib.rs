@@ -2,7 +2,7 @@ use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
 use syn::parse::{Parse, ParseStream, Result};
-use syn::{parse_macro_input, BinOp, Error, Expr, LitStr, Token, Type};
+use syn::{parse_macro_input, BinOp, Error, Expr, LitStr, Token};
 
 #[proc_macro]
 pub fn create_unit(input: TokenStream) -> TokenStream {
@@ -39,54 +39,44 @@ impl Unit {
     fn create_unit(self) -> Result<TokenStream> {
         let abbreviation = self.abbreviation;
         let name = self.name;
-        let kind = create_unit_kind(&self.expr)?;
         let scale = create_scale(&self.expr)?;
         Ok(quote! {
-            const #abbreviation: SingleUnit<#kind> = SingleUnit<#kind> {
+            SingleUnit {
                 _kind_marker: PhantomData,
                 scale: #scale,
                 abbreviation: #abbreviation,
                 name: #name,
-            };
-            macro_rules! #abbreviation {
-                () => {
-                    SingleUnit<#kind>
-                };
             }
-
         }
         .into())
     }
 }
 
-fn create_unit_kind(expr: &Expr) -> Result<Type> {
+fn create_scale(expr: &Expr) -> Result<TokenStream2> {
     match expr {
         Expr::Binary(expr) => {
-            let left = create_unit_kind(expr.left.as_ref())?;
-            let right = create_unit_kind(expr.right.as_ref())?;
+            let left = create_scale(expr.left.as_ref())?;
+            let right = create_scale(expr.right.as_ref())?;
             match expr.op {
-                BinOp::Mul(_) => Ok(Type::Verbatim(quote! {
-                    <#left as ::std::ops::Mul<#right>>::Output
-                })),
-                BinOp::Div(_) => Ok(Type::Verbatim(quote! {
-                    <#left as ::std::ops::Div<#right>>::Output
-                })),
+                BinOp::Mul(_) => Ok(quote! {
+                    (#left) * (#right)
+                }),
+                BinOp::Div(_) => Ok(quote! {
+                    (#left) / (#right)
+                }),
                 other => Err(Error::new_spanned(
                     other,
                     "Only supported operaors are `*` and `/`",
                 )),
             }
         }
-        Expr::Lit(expr) => Ok(Type::Verbatim(quote! {})),
+        Expr::Lit(expr) => Ok(quote! {#expr}),
+        Expr::Path(expr) => Ok(quote! {#expr.scale}),
         _ => Err(Error::new_spanned(
             expr,
             "expected binary operator expression",
         )),
     }
-}
-
-fn create_scale(expr: &Expr) -> Result<Expr> {
-    todo!();
 }
 
 #[proc_macro]
