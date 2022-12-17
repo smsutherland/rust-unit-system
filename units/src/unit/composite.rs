@@ -51,7 +51,7 @@ where
                 }
             }
             if !matched_unit {
-                new_units.push((unit2.clone(), *power2));
+                new_units.push((*unit2, *power2));
             }
         }
         self.component_units.append(&mut new_units);
@@ -80,7 +80,7 @@ where
                 }
             }
             if !matched_unit {
-                new_units.push((unit2.clone(), -*power2));
+                new_units.push((*unit2, -*power2));
             }
         }
         self.component_units.append(&mut new_units);
