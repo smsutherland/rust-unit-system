@@ -28,6 +28,12 @@ impl<Kind: UnitKind> std::fmt::Debug for SingleUnit<Kind> {
     }
 }
 
+impl<Kind: UnitKind> std::fmt::Display for SingleUnit<Kind> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.abbreviation)
+    }
+}
+
 impl<Kind: UnitKind> SingleUnit<Kind> {
     pub fn abbreviation(&self) -> &'static str {
         self.abbreviation
@@ -125,6 +131,6 @@ mod test {
 
     #[test]
     fn use_km() {
-        println!("{:?}", km);
+        println!("{}", km);
     }
 }
