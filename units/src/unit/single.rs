@@ -4,7 +4,7 @@ use crate::quantity::SingleQuantity;
 use std::marker::PhantomData;
 use std::ops::{Div, Mul};
 use typenum::{Prod, Quot};
-use units_macros::create_unit;
+use units_macros::create_unit_with_prefixes;
 
 pub(super) trait ToSingle {
     type Single;
@@ -105,16 +105,7 @@ impl<Kind: UnitKind> Mul<SingleUnit<Kind>> for f32 {
 pub type LengthUnit = SingleUnit<LengthKind>;
 pub type ForceUnit = SingleUnit<ForceKind>;
 
-#[allow(non_upper_case_globals)]
-pub const m: LengthUnit = LengthUnit {
-    _kind_marker: PhantomData,
-    abbreviation: "m",
-    name: "meter",
-    scale: 1.,
-};
-
-#[allow(non_upper_case_globals)]
-pub const km: LengthUnit = create_unit!("km", "kilometer", 1000. * m);
+create_unit_with_prefixes!(m: LengthUnit = 1., "meter");
 
 pub const N: ForceUnit = ForceUnit {
     _kind_marker: PhantomData,
