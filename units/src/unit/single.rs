@@ -4,7 +4,7 @@ use crate::quantity::SingleQuantity;
 use std::marker::PhantomData;
 use std::ops::{Div, Mul};
 use typenum::{Prod, Quot};
-use units_macros::create_unit_with_prefixes;
+use units_macros::{create_unit, create_unit_with_prefixes};
 
 pub(super) trait ToSingle {
     type Single;
@@ -113,12 +113,7 @@ pub type ForceUnit = SingleUnit<ForceKind>;
 
 create_unit_with_prefixes!(m: LengthUnit = 1., "meter");
 
-pub const N: ForceUnit = ForceUnit {
-    _kind_marker: PhantomData,
-    abbreviation: "N",
-    name: "Newton",
-    scale: 1.,
-};
+create_unit!(N: ForceUnit = 1., "Newton");
 
 #[cfg(test)]
 mod test {
