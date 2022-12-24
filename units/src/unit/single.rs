@@ -133,7 +133,7 @@ pub mod unit_defs {
     create_unit_with_prefixes!(mole: AmountUnit = 1., "mole");
     create_unit_with_prefixes!(cd: LuminosityUnit = 1., "candela");
 
-    create_unit!(N: ForceUnit = 1., "Newton");
+    create_unit!(N: ForceUnit = kg * m / (s * s), "Newton");
 }
 
 #[cfg(test)]
