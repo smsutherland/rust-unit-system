@@ -77,7 +77,7 @@ fn create_unit_prefix(
     original_scale: &TokenStream2,
     scale_factor: f32,
 ) -> TokenStream2 {
-    let ident = Ident::new(
+    let ident = Ident::new_raw(
         &format!("{}{}", prefix.0, unit_def.ident),
         unit_def.ident.span(),
     );
