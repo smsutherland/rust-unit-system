@@ -46,7 +46,7 @@ pub fn create_unit(input: TokenStream) -> TokenStream {
     quote! {
         #[allow(non_upper_case_globals)]
         pub const #ident: #tipe = #tipe {
-            _kind_marker: PhantomData,
+            _kind_marker: ::std::marker::PhantomData,
             abbreviation: #abbreviation,
             name: #name,
             scale: #scale,
@@ -95,7 +95,7 @@ fn create_unit_prefix(
     quote! {
         #[allow(non_upper_case_globals)]
         pub const #ident: #tipe = #tipe {
-            _kind_marker: PhantomData,
+            _kind_marker: ::std::marker::PhantomData,
             abbreviation: #abbreviation,
             name: #name,
             scale: #scale,
