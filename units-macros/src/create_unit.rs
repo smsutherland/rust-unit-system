@@ -153,6 +153,12 @@ fn create_scale(expr: &Expr) -> Result<TokenStream2> {
             }
         }
         Expr::Lit(expr) => Ok(quote! {#expr}),
+        Expr::Paren(expr) => {
+            let inside_scale = create_scale(expr.expr.as_ref())?;
+            Ok(quote! {
+                (#inside_scale)
+            })
+        }
         Expr::Path(expr) => Ok(quote! {#expr.scale}),
         _ => Err(Error::new_spanned(
             expr,
