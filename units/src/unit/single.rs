@@ -1,10 +1,8 @@
-use super::kind::*;
 use super::{CompositeUnit, UnitKind};
 use crate::quantity::SingleQuantity;
 use std::marker::PhantomData;
 use std::ops::{Div, Mul};
 use typenum::{Prod, Quot};
-use units_macros::{create_unit, create_unit_with_prefixes};
 
 pub(super) trait ToSingle {
     type Single;
@@ -108,16 +106,39 @@ impl<Kind: UnitKind> Mul<SingleUnit<Kind>> for f32 {
     }
 }
 
-pub type LengthUnit = SingleUnit<LengthKind>;
-pub type ForceUnit = SingleUnit<ForceKind>;
+pub mod kinds {
+    use super::SingleUnit;
+    use crate::unit::kind::*;
 
-create_unit_with_prefixes!(m: LengthUnit = 1., "meter");
+    pub type LengthUnit = SingleUnit<LengthKind>;
+    pub type MassUnit = SingleUnit<MassKind>;
+    pub type TimeUnit = SingleUnit<TimeKind>;
+    pub type CurrentUnit = SingleUnit<CurrentKind>;
+    pub type TemperatureUnit = SingleUnit<TemperatureKind>;
+    pub type AmountUnit = SingleUnit<AmountKind>;
+    pub type LuminosityUnit = SingleUnit<LuminosityKind>;
 
-create_unit!(N: ForceUnit = 1., "Newton");
+    pub type ForceUnit = SingleUnit<ForceKind>;
+}
+
+pub mod unit_defs {
+    use super::kinds::*;
+    use units_macros::{create_unit, create_unit_with_prefixes};
+
+    create_unit_with_prefixes!(m: LengthUnit = 1., "meter");
+    create_unit_with_prefixes!(g: MassUnit = 1e-3, "gram");
+    create_unit_with_prefixes!(s: TimeUnit = 1., "second");
+    create_unit_with_prefixes!(A: CurrentUnit = 1., "ampere");
+    create_unit_with_prefixes!(K: TemperatureUnit = 1., "kelvin");
+    create_unit_with_prefixes!(mole: AmountUnit = 1., "mole");
+    create_unit_with_prefixes!(cd: LuminosityUnit = 1., "candela");
+
+    create_unit!(N: ForceUnit = 1., "Newton");
+}
 
 #[cfg(test)]
 mod test {
-    use super::*;
+    use super::unit_defs::*;
     #[test]
     fn multiple_meter() {
         let m2 = m * m;
