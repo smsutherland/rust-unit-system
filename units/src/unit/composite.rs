@@ -4,7 +4,7 @@ use std::marker::PhantomData;
 use std::ops::{Div, Mul};
 use typenum::{Prod, Quot};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct CompositeUnit<Kind: UnitKind> {
     pub(super) component_units: Vec<(DynUnit, i8)>,
     _kind_marker: PhantomData<Kind>,

@@ -41,6 +41,12 @@ impl<L, M, T, C, Te, A, Lu> Default for CompositeUnitKind<L, M, T, C, Te, A, Lu>
     }
 }
 
+impl<L, M, T, C, Te, A, Lu> PartialEq for CompositeUnitKind<L, M, T, C, Te, A, Lu> {
+    fn eq(&self, _: &Self) -> bool {
+        true
+    }
+}
+
 impl<L: Integer, M: Integer, T: Integer, C: Integer, Te: Integer, A: Integer, Lu: Integer> UnitKind
     for CompositeUnitKind<L, M, T, C, Te, A, Lu>
 {

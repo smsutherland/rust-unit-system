@@ -1,8 +1,8 @@
 use crate::unit::kind::UnitKind;
 use crate::unit::{CompositeUnit, SingleUnit};
 use std::fmt::Display;
-use std::ops::Mul;
-use typenum::Prod;
+use std::ops::{Div, Mul};
+use typenum::{Prod, Quot};
 
 #[derive(Debug, Clone)]
 pub struct SingleQuantity<Kind: UnitKind> {
@@ -21,7 +21,7 @@ impl<Kind: UnitKind> SingleQuantity<Kind> {
         let target_scale = unit.scale_factor();
         Self {
             unit,
-            scalar: self.scalar * target_scale / source_scale,
+            scalar: self.scalar * source_scale / target_scale,
         }
     }
 }
@@ -56,5 +56,42 @@ where
 impl<Kind: UnitKind> Display for SingleQuantity<Kind> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{} {}", self.scalar, self.unit)
+    }
+}
+
+impl<Kind1: UnitKind, Kind2: UnitKind> Div<SingleQuantity<Kind2>> for SingleQuantity<Kind1>
+where
+    Kind1: Div<Kind2>,
+    Quot<Kind1, Kind2>: UnitKind,
+{
+    type Output = SingleQuantity<Quot<Kind1, Kind2>>;
+
+    fn div(self, rhs: SingleQuantity<Kind2>) -> Self::Output {
+        Self::Output::new(self.unit / rhs.unit, self.scalar / rhs.scalar)
+    }
+}
+
+impl<Kind1: UnitKind, Kind2: UnitKind> Div<SingleUnit<Kind2>> for SingleQuantity<Kind1>
+where
+    Kind1: Div<Kind2>,
+    Quot<Kind1, Kind2>: UnitKind,
+{
+    type Output = SingleQuantity<Quot<Kind1, Kind2>>;
+
+    fn div(self, rhs: SingleUnit<Kind2>) -> Self::Output {
+        Self::Output {
+            unit: self.unit / rhs,
+            scalar: self.scalar,
+        }
+    }
+}
+
+impl<Kind: UnitKind + PartialEq> PartialEq for SingleQuantity<Kind> {
+    // Do we want this to check if the units are equal, or just the quantity itself?
+    // i.e. does 12cm == 0.12m?
+    // maybe some other method can be used to check for unit equality?
+    // for now we check for unit equality here because its simpler to implement
+    fn eq(&self, other: &Self) -> bool {
+        self.scalar == other.scalar && self.unit == other.unit
     }
 }
