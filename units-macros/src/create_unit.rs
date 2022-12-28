@@ -3,7 +3,7 @@ use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
 use syn::{
     parse::{Parse, ParseStream},
-    parse_macro_input, BinOp, Error, Expr, Ident, LitStr, Result, Token, Type,
+    parse_macro_input, Attribute, BinOp, Error, Expr, Ident, LitStr, Result, Token, Type,
 };
 
 const METRIC_PREFIXES: [(f32, (&str, &str)); 21] = [
@@ -33,6 +33,7 @@ const METRIC_PREFIXES: [(f32, (&str, &str)); 21] = [
 #[inline]
 pub fn create_unit(input: TokenStream) -> TokenStream {
     let UnitDef {
+        attrs,
         ident,
         abbreviation,
         name,
@@ -44,6 +45,7 @@ pub fn create_unit(input: TokenStream) -> TokenStream {
         Err(e) => return e.to_compile_error().into(),
     };
     quote! {
+        #(#attrs)*
         #[allow(non_upper_case_globals)]
         pub const #ident: #tipe = #tipe {
             _kind_marker: ::std::marker::PhantomData,
@@ -77,6 +79,7 @@ fn create_unit_prefix(
     original_scale: &TokenStream2,
     scale_factor: f32,
 ) -> TokenStream2 {
+    let attrs = &unit_def.attrs;
     let ident = Ident::new_raw(
         &format!("{}{}", prefix.0, unit_def.ident),
         unit_def.ident.span(),
@@ -94,6 +97,7 @@ fn create_unit_prefix(
 
     quote! {
         #[allow(non_upper_case_globals)]
+        #(#attrs)*
         pub const #ident: #tipe = #tipe {
             _kind_marker: ::std::marker::PhantomData,
             abbreviation: #abbreviation,
@@ -104,6 +108,7 @@ fn create_unit_prefix(
 }
 
 struct UnitDef {
+    attrs: Vec<Attribute>,
     ident: Ident,
     abbreviation: LitStr,
     name: LitStr,
@@ -113,6 +118,7 @@ struct UnitDef {
 
 impl Parse for UnitDef {
     fn parse(input: ParseStream) -> Result<Self> {
+        let attrs = input.call(Attribute::parse_outer)?;
         let ident = input.parse::<Ident>()?;
         input.parse::<Token![:]>()?;
         let tipe = input.parse::<Type>()?;
@@ -125,6 +131,7 @@ impl Parse for UnitDef {
             Err(_) => LitStr::new(&ident.to_string(), ident.span()),
         };
         Ok(Self {
+            attrs,
             ident,
             abbreviation,
             name,

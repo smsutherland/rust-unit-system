@@ -125,15 +125,47 @@ pub mod unit_defs {
     use super::kinds::*;
     use units_macros::{create_unit, create_unit_with_prefixes};
 
-    create_unit_with_prefixes!(m: LengthUnit = 1., "meter");
-    create_unit_with_prefixes!(g: MassUnit = 1e-3, "gram");
-    create_unit_with_prefixes!(s: TimeUnit = 1., "second");
-    create_unit_with_prefixes!(A: CurrentUnit = 1., "ampere");
-    create_unit_with_prefixes!(K: TemperatureUnit = 1., "kelvin");
-    create_unit_with_prefixes!(mole: AmountUnit = 1., "mole");
-    create_unit_with_prefixes!(cd: LuminosityUnit = 1., "candela");
+    create_unit_with_prefixes!(
+        /// A meter. The SI unit of length.
+        m: LengthUnit = 1.,
+        "meter"
+    );
+    create_unit_with_prefixes!(
+        /// A kilogram. The SI unit of mass.
+        g: MassUnit = 1e-3,
+        "gram"
+    );
+    create_unit_with_prefixes!(
+        /// A second. The SI unit of time.
+        s: TimeUnit = 1.,
+        "second"
+    );
+    create_unit_with_prefixes!(
+        /// An Ampere. The SI unit of current.
+        A: CurrentUnit = 1.,
+        "ampere"
+    );
+    create_unit_with_prefixes!(
+        /// A Kelvin. The SI unit of temperature.
+        K: TemperatureUnit = 1.,
+        "kelvin"
+    );
+    create_unit_with_prefixes!(
+        /// A mole. The SI unit of amount.
+        mole: AmountUnit = 1.,
+        "mole"
+    );
+    create_unit_with_prefixes!(
+        /// A candela. The SI unit of luminous intensity.
+        cd: LuminosityUnit = 1.,
+        "candela"
+    );
 
-    create_unit!(N: ForceUnit = kg * m / (s * s), "Newton");
+    create_unit!(
+        /// A Newton. The derived unit of Force.
+        N: ForceUnit = kg * m / (s * s),
+        "Newton"
+    );
 }
 
 #[cfg(test)]
