@@ -1,9 +1,10 @@
 use proc_macro::TokenStream;
-use proc_macro2::TokenStream as TokenStream2;
+use proc_macro2::{Literal, TokenStream as TokenStream2};
 use quote::quote;
 use syn::{
     parse::{Parse, ParseStream},
-    parse_macro_input, Attribute, BinOp, Error, Expr, Ident, LitStr, Result, Token, Type,
+    parse_macro_input, parse_quote, Attribute, BinOp, Error, Expr, Ident, LitStr, Result, Token,
+    Type,
 };
 
 const METRIC_PREFIXES: [(f32, (&str, &str)); 21] = [
@@ -34,6 +35,7 @@ const METRIC_PREFIXES: [(f32, (&str, &str)); 21] = [
 pub fn create_unit(input: TokenStream) -> TokenStream {
     let UnitDef {
         attrs,
+        docs,
         ident,
         abbreviation,
         name,
@@ -46,6 +48,7 @@ pub fn create_unit(input: TokenStream) -> TokenStream {
     };
     quote! {
         #(#attrs)*
+        #(#docs)*
         #[allow(non_upper_case_globals)]
         pub const #ident: #tipe = #tipe {
             _kind_marker: ::std::marker::PhantomData,
@@ -80,6 +83,17 @@ fn create_unit_prefix(
     scale_factor: f32,
 ) -> TokenStream2 {
     let attrs = &unit_def.attrs;
+    let new_docs = change_prefix_docs(
+        &unit_def.name.value(),
+        &unit_def.ident,
+        scale_factor,
+        prefix,
+    );
+    let docs = if new_docs.is_empty() {
+        &unit_def.docs
+    } else {
+        &new_docs
+    };
     let ident = Ident::new_raw(
         &format!("{}{}", prefix.0, unit_def.ident),
         unit_def.ident.span(),
@@ -98,6 +112,7 @@ fn create_unit_prefix(
     quote! {
         #[allow(non_upper_case_globals)]
         #(#attrs)*
+        #(#docs)*
         pub const #ident: #tipe = #tipe {
             _kind_marker: ::std::marker::PhantomData,
             abbreviation: #abbreviation,
@@ -109,6 +124,7 @@ fn create_unit_prefix(
 
 struct UnitDef {
     attrs: Vec<Attribute>,
+    docs: Vec<Attribute>,
     ident: Ident,
     abbreviation: LitStr,
     name: LitStr,
@@ -118,7 +134,19 @@ struct UnitDef {
 
 impl Parse for UnitDef {
     fn parse(input: ParseStream) -> Result<Self> {
-        let attrs = input.call(Attribute::parse_outer)?;
+        let (attrs, docs) = {
+            let attrs = input.call(Attribute::parse_outer)?;
+            let mut filtered_attrs = Vec::new();
+            let mut docs = Vec::new();
+            for attr in attrs {
+                if attr.path.is_ident("doc") {
+                    docs.push(attr);
+                } else {
+                    filtered_attrs.push(attr);
+                }
+            }
+            (filtered_attrs, docs)
+        };
         let ident = input.parse::<Ident>()?;
         input.parse::<Token![:]>()?;
         let tipe = input.parse::<Type>()?;
@@ -132,6 +160,7 @@ impl Parse for UnitDef {
         };
         Ok(Self {
             attrs,
+            docs,
             ident,
             abbreviation,
             name,
@@ -172,4 +201,27 @@ fn create_scale(expr: &Expr) -> Result<TokenStream2> {
             "expected binary operator expression",
         )),
     }
+}
+
+fn change_prefix_docs(
+    base_name: impl std::fmt::Display,
+    base_ident: impl std::fmt::Display,
+    scale: f32,
+    (_abbr, prefix): (&str, &str),
+) -> Vec<Attribute> {
+    let a_an = match prefix.chars().next() {
+        None => return Vec::new(),
+        Some('a' | 'e' | 'i' | 'o' | 'u') => "An",
+        _ => "A",
+    };
+    let doc_string = format!(
+        "{a_an} {prefix}{base_name}.\n
+{scale:e} [`{base_name}`].\n
+\n            
+[`{base_name}`]: {base_ident}"
+    );
+    let doc = Literal::string(&doc_string);
+    vec![parse_quote! {
+        #[doc = #doc]
+    }]
 }
