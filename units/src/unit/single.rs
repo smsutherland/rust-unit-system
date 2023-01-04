@@ -131,7 +131,11 @@ pub mod unit_defs {
         "meter"
     );
     create_unit_with_prefixes!(
-        /// A kilogram. The SI unit of mass.
+        /// A gram. This is not the SI unit of mass. Instead, the kilogram is the SI unit of mass.
+        /// A gram is one thousandth of a kilogram.
+        ///
+        /// Due to how prefixed units are generated, currently the specific documentation cannot go
+        /// on the kilogram.
         g: MassUnit = 1e-3,
         "gram"
     );
