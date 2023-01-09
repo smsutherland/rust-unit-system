@@ -37,5 +37,7 @@
 //! ```
 
 mod quantity;
+pub use quantity::SingleQuantity;
 mod unit;
 pub use unit::single::unit_defs::*;
+pub use unit::{composite::CompositeUnit, single::SingleUnit};

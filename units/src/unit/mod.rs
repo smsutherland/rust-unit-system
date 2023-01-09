@@ -1,4 +1,4 @@
-mod composite;
+pub mod composite;
 pub use composite::CompositeUnit;
 pub mod kind;
 use kind::*;
