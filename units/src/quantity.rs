@@ -4,6 +4,11 @@ use std::fmt::Display;
 use std::ops::{Div, Mul};
 use typenum::{Prod, Quot};
 
+/// A single quantity containing a scalar (f32) and a unit.
+///
+/// For example, 13 meters is a single quantity.
+/// This is in contrast with the (yet unimplemented) ArrayQuantity which contains many scalars
+/// (f32) and a single associated unit.
 #[derive(Debug, Clone)]
 pub struct SingleQuantity<Kind: UnitKind> {
     unit: CompositeUnit<Kind>,
@@ -11,10 +16,18 @@ pub struct SingleQuantity<Kind: UnitKind> {
 }
 
 impl<Kind: UnitKind> SingleQuantity<Kind> {
+    /// Create a new quantity from a unit and a scalar.
     pub fn new(unit: CompositeUnit<Kind>, scalar: f32) -> Self {
         Self { unit, scalar }
     }
 
+    /// Convert a quantity from one unit to another.
+    /// ```
+    /// use units as u;
+    /// let velocity1 = 10. * u::cm / u::s;
+    /// let velocity2 = 0.1 * u::m / u::s;
+    /// assert!(velocity1.to(u::m / u::s).unit_eq(velocity2));
+    /// ```
     pub fn to(&self, unit: impl Into<CompositeUnit<Kind>>) -> Self {
         let unit = unit.into();
         let source_scale = self.unit.scale_factor();
