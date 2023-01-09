@@ -27,6 +27,14 @@ pub struct CompositeUnitKind<Length, Mass, Time, Current, Temperature, Amount, L
     _marker: PhantomData<tarr![Length, Mass, Time, Current, Temperature, Amount, Luminosity]>,
 }
 
+impl<L, M, T, C, Te, A, Lu> Clone for CompositeUnitKind<L, M, T, C, Te, A, Lu> {
+    fn clone(&self) -> Self {
+        Self {
+            _marker: PhantomData,
+        }
+    }
+}
+
 impl<L, M, T, C, Te, A, Lu> std::fmt::Debug for CompositeUnitKind<L, M, T, C, Te, A, Lu> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "CompositeUnitKind")

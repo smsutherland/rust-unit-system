@@ -87,11 +87,7 @@ where
 }
 
 impl<Kind: UnitKind + PartialEq> PartialEq for SingleQuantity<Kind> {
-    // Do we want this to check if the units are equal, or just the quantity itself?
-    // i.e. does 12cm == 0.12m?
-    // maybe some other method can be used to check for unit equality?
-    // for now we check for unit equality here because its simpler to implement
     fn eq(&self, other: &Self) -> bool {
-        self.scalar == other.scalar && self.unit == other.unit
+        self.scalar * self.unit.scale_factor() == other.scalar * other.unit.scale_factor()
     }
 }

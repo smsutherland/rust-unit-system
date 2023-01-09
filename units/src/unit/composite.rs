@@ -4,7 +4,7 @@ use std::marker::PhantomData;
 use std::ops::{Div, Mul};
 use typenum::{Prod, Quot};
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, PartialEq)]
 pub struct CompositeUnit<Kind: UnitKind> {
     pub(super) component_units: Vec<(DynUnit, i8)>,
     _kind_marker: PhantomData<Kind>,
@@ -26,6 +26,15 @@ impl<Kind: UnitKind> CompositeUnit<Kind> {
             }
         }
         res
+    }
+}
+
+impl<Kind: UnitKind> Clone for CompositeUnit<Kind> {
+    fn clone(&self) -> Self {
+        Self {
+            component_units: self.component_units.clone(),
+            _kind_marker: PhantomData,
+        }
     }
 }
 
