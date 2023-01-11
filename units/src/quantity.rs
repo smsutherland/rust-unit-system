@@ -24,8 +24,8 @@ impl<Kind: UnitKind> SingleQuantity<Kind> {
     /// Convert a quantity from one unit to another.
     /// ```
     /// use units as u;
-    /// let velocity1 = 10. * u::cm / u::s;
-    /// let velocity2 = 0.1 * u::m / u::s;
+    /// let velocity1 = 100. * u::cm / u::s;
+    /// let velocity2 = 1. * u::m / u::s;
     /// assert!(velocity1.to(u::m / u::s).unit_eq(velocity2));
     /// ```
     pub fn to(&self, unit: impl Into<CompositeUnit<Kind>>) -> Self {
@@ -36,6 +36,10 @@ impl<Kind: UnitKind> SingleQuantity<Kind> {
             unit,
             scalar: self.scalar * source_scale / target_scale,
         }
+    }
+
+    pub fn unit_eq(&self, other: Self) -> bool {
+        self.scalar == other.scalar && self.unit == other.unit
     }
 }
 

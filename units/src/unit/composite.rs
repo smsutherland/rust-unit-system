@@ -4,7 +4,7 @@ use std::marker::PhantomData;
 use std::ops::{Div, Mul};
 use typenum::{Prod, Quot};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
 pub struct CompositeUnit<Kind: UnitKind> {
     pub(super) component_units: Vec<(DynUnit, i8)>,
     _kind_marker: PhantomData<Kind>,
@@ -26,6 +26,12 @@ impl<Kind: UnitKind> CompositeUnit<Kind> {
             }
         }
         res
+    }
+}
+
+impl<Kind: UnitKind> PartialEq for CompositeUnit<Kind> {
+    fn eq(&self, other: &Self) -> bool {
+        self.component_units == other.component_units
     }
 }
 
