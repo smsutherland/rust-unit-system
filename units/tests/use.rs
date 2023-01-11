@@ -30,10 +30,19 @@ fn using_to() {
 }
 
 #[test]
-fn equality_without_to() {
+fn equality_different_units() {
     let distance = 12. * u::cm;
     let time = 2. * u::s;
     let velocity1 = distance.clone() / time.clone();
     let velocity2 = distance.to(u::m) / time;
     assert_eq!(velocity1, velocity2);
+}
+
+#[test]
+fn equality_same_units() {
+    let distance = 12. * u::cm;
+    let time = 2. * u::s;
+    let velocity1 = distance.clone() / time.clone();
+    let velocity2 = distance.to(u::m) / time;
+    assert!(!velocity1.unit_eq(velocity2));
 }
