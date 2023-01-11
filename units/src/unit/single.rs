@@ -166,7 +166,7 @@ pub mod unit_defs {
     );
 
     create_unit!(
-        /// A Newton. The derived unit of Force.
+        /// A Newton. The derived unit of force.
         N: ForceUnit = kg * m / (s * s),
         "Newton"
     );
