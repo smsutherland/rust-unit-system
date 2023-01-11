@@ -4,6 +4,11 @@ use std::marker::PhantomData;
 use std::ops::{Div, Mul};
 use typenum::{Prod, Quot};
 
+/// Represents a product and/or quotient of many units.
+///
+/// For example, `m/s` is a composite unit.
+/// Composite units can be created using arithmetic on other units.
+/// `m/s` can be created as `u::m / u::s`.
 #[derive(Debug)]
 pub struct CompositeUnit<Kind: UnitKind> {
     pub(super) component_units: Vec<(DynUnit, i8)>,

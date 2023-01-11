@@ -8,12 +8,18 @@ pub(super) trait ToSingle {
     type Single;
 }
 
+/// A individual unit, such as a second.
+///
+/// This does not have to represent a base unit. For example, a Newton is also a single unit.
 #[derive(PartialEq, Clone, Copy)]
 pub struct SingleUnit<Kind: UnitKind> {
     _kind_marker: PhantomData<Kind>,
-    pub(super) scale: f32,
-    pub(super) abbreviation: &'static str,
-    pub(super) name: &'static str,
+    /// The scale from the SI base unit equivalent.
+    pub scale: f32,
+    /// An abbreviation for the unit.
+    pub abbreviation: &'static str,
+    /// The full name of the unit.
+    pub name: &'static str,
 }
 
 impl<Kind: UnitKind> std::fmt::Debug for SingleUnit<Kind> {
@@ -29,16 +35,6 @@ impl<Kind: UnitKind> std::fmt::Debug for SingleUnit<Kind> {
 impl<Kind: UnitKind> std::fmt::Display for SingleUnit<Kind> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.abbreviation)
-    }
-}
-
-impl<Kind: UnitKind> SingleUnit<Kind> {
-    pub fn abbreviation(&self) -> &'static str {
-        self.abbreviation
-    }
-
-    pub fn name(&self) -> &'static str {
-        self.name
     }
 }
 
