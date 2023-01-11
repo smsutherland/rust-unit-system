@@ -38,6 +38,16 @@ impl<Kind: UnitKind> SingleQuantity<Kind> {
         }
     }
 
+    /// Checks for equality between two quantities, not just in value, but in units.
+    /// ```
+    /// use units as u;
+    /// let distance = 12. * u::cm;
+    /// let time = 2. * u::s;
+    /// let velocity1 = distance.clone() / time.clone();
+    /// let velocity2 = distance.to(u::m) / time;
+    /// assert_eq!(velocity1, velocity2);
+    /// assert!(!velocity1.unit_eq(velocity2));
+    /// ```
     pub fn unit_eq(&self, other: Self) -> bool {
         self.scalar == other.scalar && self.unit == other.unit
     }
