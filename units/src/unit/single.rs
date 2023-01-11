@@ -117,6 +117,10 @@ pub mod kinds {
     pub type ForceUnit = SingleUnit<ForceKind>;
 }
 
+/// Module containing the definitions of all units.
+///
+/// Units are defined in this module to lessen clutter in the root module. When using this library,
+/// it is recommended to `use units::unit_defs as u` and then use `u::cm` in order to access all the units.
 pub mod unit_defs {
     use super::kinds::*;
     use units_macros::{create_unit, create_unit_with_prefixes};

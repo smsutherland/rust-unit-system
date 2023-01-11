@@ -12,13 +12,13 @@
 //!
 //! Create quantities by multiplying units with numbers.
 //! ```
-//! use units as u;
+//! use units::unit_defs as u;
 //! let distance = 12. * u::cm;
 //! ```
 //!
 //! Arithmetic on quantities works as you would expect.
 //! ```
-//! use units as u;
+//! use units::unit_defs as u;
 //! let distance = 12. * u::cm;
 //! let time = 2. * u::s;
 //! let velocity1 = distance / time;
@@ -28,7 +28,7 @@
 //!
 //! Converting between units can be done with the `to` method.
 //! ```
-//! use units as u;
+//! use units::unit_defs as u;
 //! let distance = 12. * u::cm;
 //! let time = 2. * u::s;
 //! let velocity1 = (distance / time).to(u::m / u::s);
@@ -39,5 +39,5 @@
 mod quantity;
 pub use quantity::SingleQuantity;
 mod unit;
-pub use unit::single::unit_defs::*;
+pub use unit::single::unit_defs;
 pub use unit::{composite::CompositeUnit, single::SingleUnit};

@@ -1,4 +1,4 @@
-use units as u;
+use units::unit_defs as u;
 
 #[test]
 fn create_quantity() {
