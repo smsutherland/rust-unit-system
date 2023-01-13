@@ -123,7 +123,7 @@ pub mod kinds {
 /// it is recommended to `use units::unit_defs as u` and then use `u::cm` in order to access all the units.
 pub mod unit_defs {
     use super::kinds::*;
-    use units_macros::{create_unit, create_unit_with_prefixes};
+    use rus_macros::{create_unit, create_unit_with_prefixes};
 
     create_unit_with_prefixes!(
         /// A meter. The SI unit of length.

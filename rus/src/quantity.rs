@@ -23,7 +23,7 @@ impl<Kind: UnitKind> SingleQuantity<Kind> {
 
     /// Convert a quantity from one unit to another.
     /// ```
-    /// use units::unit_defs as u;
+    /// use rus::unit_defs as u;
     /// let velocity1 = 100. * u::cm / u::s;
     /// let velocity2 = 1. * u::m / u::s;
     /// assert!(velocity1.to(u::m / u::s).unit_eq(velocity2));
@@ -40,7 +40,7 @@ impl<Kind: UnitKind> SingleQuantity<Kind> {
 
     /// Checks for equality between two quantities, not just in value, but in units.
     /// ```
-    /// use units::unit_defs as u;
+    /// use rus::unit_defs as u;
     /// let distance = 12. * u::cm;
     /// let time = 2. * u::s;
     /// let velocity1 = distance.clone() / time.clone();

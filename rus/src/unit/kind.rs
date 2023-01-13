@@ -1,9 +1,9 @@
+use rus_macros::type_arith;
 use std::{
     marker::PhantomData,
     ops::{Add, Div, Mul, Sub},
 };
 use typenum::{tarr, Diff, Integer, Sum, P1, Z0};
-use units_macros::type_arith;
 
 use super::composite::IntoComp;
 

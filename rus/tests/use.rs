@@ -1,4 +1,4 @@
-use units::unit_defs as u;
+use rus::unit_defs as u;
 
 #[test]
 fn create_quantity() {

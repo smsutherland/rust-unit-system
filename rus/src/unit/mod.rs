@@ -4,6 +4,7 @@ pub mod kind;
 use kind::*;
 pub mod single;
 pub use single::SingleUnit;
+// pub mod equivalency;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 struct DynUnit {

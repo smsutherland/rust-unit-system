@@ -6,19 +6,19 @@
     missing_debug_implementations
 )]
 
-//! units (name pending) is a units library built around the idea that it should be
+//! Rust-Unit-System (rus) is a units library built around the idea that it should be
 //! simple to work with units in code. Working with units using this library should be similar to
 //! working with units in a normal mathematical context.
 //!
 //! Create quantities by multiplying units with numbers.
 //! ```
-//! use units::unit_defs as u;
+//! use rus::unit_defs as u;
 //! let distance = 12. * u::cm;
 //! ```
 //!
 //! Arithmetic on quantities works as you would expect.
 //! ```
-//! use units::unit_defs as u;
+//! use rus::unit_defs as u;
 //! let distance = 12. * u::cm;
 //! let time = 2. * u::s;
 //! let velocity1 = distance / time;
@@ -28,7 +28,7 @@
 //!
 //! Converting between units can be done with the `to` method.
 //! ```
-//! use units::unit_defs as u;
+//! use rus::unit_defs as u;
 //! let distance = 12. * u::cm;
 //! let time = 2. * u::s;
 //! let velocity1 = (distance / time).to(u::m / u::s);
